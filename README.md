@@ -3,10 +3,8 @@ Leviathan
 
 `Leviathan` is a service locator implementation of DI pattern 
 
-build.gradle.kts
-
 ```kotlin
-implementation("com.compose.gears.di.leviathan:leviathan:0.0.1")
+implementation("io.github.composegears.di:leviathan:1.0.0")
 ```
 
 Base usage
