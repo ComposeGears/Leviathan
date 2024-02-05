@@ -92,10 +92,26 @@ publishing {
 }
 
 signing {
-    val pgpKey = project.properties["PGP_KEY"]?.toString()?.replace("|","\n")
+    val pgpKey = project.properties["PGP_KEY"]?.toString()?.replace("|", "\n")
     val pgpPas = project.properties["PGP_PAS"]?.toString()
     if (!pgpPas.isNullOrBlank() && !pgpKey.isNullOrBlank()) {
+        println("signing")
         useInMemoryPgpKeys(pgpKey, pgpPas)
         sign(publishing.publications)
+    } else println("no signing information provided")
+}
+
+tasks.publish.get().doLast {
+    fileTree(layout.buildDirectory.dir("m2")).files.onEach {
+        if (
+            it.name.endsWith(".asc.md5") or
+            it.name.endsWith(".asc.sha1") or
+            it.name.endsWith(".sha256") or
+            it.name.endsWith(".sha256") or
+            it.name.endsWith(".sha512") or
+            it.name.equals("maven-metadata.xml.sha1") or
+            it.name.equals("maven-metadata.xml.md5") or
+            it.name.equals("maven-metadata.xml")
+        ) it.delete()
     }
 }
