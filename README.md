@@ -1,3 +1,5 @@
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.composegears.di/leviathan)](https://central.sonatype.com/artifact/io.github.composegears.di/leviathan)
+
 Leviathan
 =========
 
