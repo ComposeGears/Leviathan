@@ -15,8 +15,8 @@ Base usage
 Create `Module` (recommend to use `object`) and extends from `Leviathan` class
 
 Create fields using one of 2 functions:
-- Use `by instance` to create access single object (same instance upon every access)
-- Use `by factory` to create factory objects (new instance upon each access)
+- Use `by instance` to create single-object-delegate (same instance upon every access)
+- Use `by factory` to create factory-delegate (new instance upon each access)
 
 Use `by (instance|factory)<Interface>{InterfaceImpl}` to hide impl class
 
@@ -45,7 +45,7 @@ class Module : Leviathan() {
 }
 ```
 
-Access declared dependencies
+Dependencies usage:
 
 ```kotlin
 fun foo(){
