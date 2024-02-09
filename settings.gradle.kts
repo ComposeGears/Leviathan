@@ -1,4 +1,4 @@
-rootProject.name = "Leviathan"
+rootProject.name = "LeviathanApp"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
