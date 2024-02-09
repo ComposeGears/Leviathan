@@ -1,4 +1,4 @@
-package com.composegears.di.leviathan
+package com.composegears.leviathan
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

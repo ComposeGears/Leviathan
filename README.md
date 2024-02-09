@@ -1,12 +1,12 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.composegears.di/leviathan)](https://central.sonatype.com/artifact/io.github.composegears.di/leviathan)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.composegears/leviathan)](https://central.sonatype.com/artifact/io.github.composegears/leviathan)
 
 Leviathan
 =========
 
-`Leviathan` is a service locator implementation of DI pattern 
+`Leviathan` is a service locator implementation of DI pattern
 
 ```kotlin
-implementation("io.github.composegears.di:leviathan:1.0.0")
+implementation("io.github.composegears:leviathan:1.0.0")
 ```
 
 Base usage
@@ -15,6 +15,7 @@ Base usage
 Create `Module` (recommend to use `object`) and extends from `Leviathan` class
 
 Create fields using one of 2 functions:
+
 - Use `by instance` to create single-object-delegate (same instance upon every access)
 - Use `by factory` to create factory-delegate (new instance upon each access)
 
@@ -33,6 +34,7 @@ class SampleRepositoryWithDependency(val dependency: SampleRepository)
 interface SampleInterfaceRepo
 class SampleInterfaceRepoImpl : SampleInterfaceRepo
 ```
+
 Create module
 
 ```kotlin
@@ -48,23 +50,58 @@ class Module : Leviathan() {
 Dependencies usage:
 
 ```kotlin
-fun foo(){
+fun foo() {
     val repo = Module.lazyRepository
     //...  
 }
 
 class Model(
     val repo: SampleRepository = Module.lazyRepository
-){
+) {
     //...
 }
 
-class Model(){
+class Model() {
     private val repo = Module.lazyRepository
     //...
 }
 
 ```
+
+Mutli-module case
+-----------------
+
+- HttpClient
+- WeatherRepository <- HttpClient
+- NewRepository <- HttpClient
+- App <- WeatherRepository, NewRepository
+
+1) Http Client Module
+   ```kotlin
+   class HttpClient {
+       // ...
+   }
+   ```
+2) Weather service module
+   ```kotlin
+   class WeatherRepository(client: HttpClient) {
+       // ...
+   }
+   ```
+3) New service module
+   ```kotlin
+   class NewRepository(client: HttpClient) {
+      // ...
+   }
+   ```
+4) App service module
+   ```kotlin
+   object AppModule : Leviathan() {
+       private val httpClient by instance { HttpClient() }
+       val weatherRepository by instance { WeatherRepository(core) }
+       val newRepository by instance { NewRepository(core) }
+   }
+   ```
 
 Advanced case
 -------------

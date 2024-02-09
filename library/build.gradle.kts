@@ -5,7 +5,7 @@ plugins {
     signing
 }
 
-val libName = "io.github.composegears.di"
+val libName = "io.github.composegears"
 val libVersion = "1.0.0"
 
 group = libName
@@ -58,7 +58,7 @@ publishing {
         pom {
             name.set("Leviathan")
             description.set("KMM DI library")
-            url.set("https://github.com/ComposeGears/DI")
+            url.set("https://github.com/ComposeGears/Leviathan")
 
             licenses {
                 license {
@@ -79,7 +79,7 @@ publishing {
                 }
             }
             scm {
-                url.set("https://github.com/ComposeGears/DI")
+                url.set("https://github.com/ComposeGears/Leviathan")
             }
         }
     }
