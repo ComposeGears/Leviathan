@@ -73,7 +73,7 @@ Mutli-module case
 
 - HttpClient
 - WeatherRepository <- HttpClient
-- NewRepository <- HttpClient
+- NewsRepository <- HttpClient
 - App <- WeatherRepository, NewRepository
 
 1) Http Client Module
@@ -88,9 +88,9 @@ Mutli-module case
        // ...
    }
    ```
-3) New service module
+3) News service module
    ```kotlin
-   class NewRepository(client: HttpClient) {
+   class NewsRepository(client: HttpClient) {
       // ...
    }
    ```
@@ -98,8 +98,8 @@ Mutli-module case
    ```kotlin
    object AppModule : Leviathan() {
        private val httpClient by instance { HttpClient() }
-       val weatherRepository by instance { WeatherRepository(core) }
-       val newRepository by instance { NewRepository(core) }
+       val weatherRepository by instance { WeatherRepository(httpClient) }
+       val newsRepository by instance { NewRepository(httpClient) }
    }
    ```
 
