@@ -74,7 +74,7 @@ Mutli-module case
 - HttpClient
 - WeatherRepository <- HttpClient
 - NewsRepository <- HttpClient
-- App <- WeatherRepository, NewRepository
+- App <- WeatherRepository, NewsRepository
 
 1) Http Client Module
    ```kotlin
