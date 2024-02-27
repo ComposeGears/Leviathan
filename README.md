@@ -1,12 +1,29 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.composegears/leviathan)](https://central.sonatype.com/artifact/io.github.composegears/leviathan)
+<h1 align="center">Leviathan</h1>
+<h2 align="center">Service locator implementation of DI pattern</h2>
 
-Leviathan
-=========
+<p align="center">
+    <a target="_blank" href="https://github.com/ComposeGears/leviathan/stargazers"><img src="https://img.shields.io/github/stars/ComposeGears/leviathan.svg"></a>
+    <a href="https://github.com/ComposeGears/leviathan/network"><img alt="API" src="https://img.shields.io/github/forks/ComposeGears/leviathan.svg"/></a>
+    <a target="_blank" href="https://github.com/ComposeGears/leviathan/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ComposeGears/leviathan.svg"></a>
+    <a target="_blank" href="https://central.sonatype.com/artifact/io.github.composegears/leviathan"><img src="https://img.shields.io/maven-central/v/io.github.composegears/leviathan.svg?style=flat-square"/></a>
+</p>
 
-`Leviathan` is a service locator implementation of DI pattern
 
+Add the dependency below to your **module**'s `build.gradle.kts` file:
+#### Android only
 ```kotlin
-implementation("io.github.composegears:leviathan:1.0.0")
+dependencies {
+   implementation("io.github.composegears:leviathan:$version")
+}
+```
+
+#### Multiplatform
+```kotlin
+sourceSets {
+    commonMain.dependencies {
+        implementation("io.github.composegears:leviathan:$version")
+    }
+}
 ```
 
 Base usage
@@ -150,4 +167,22 @@ fun ModelTests(){
     })
     model.foo()
 }
+```
+
+
+# License
+```xml
+Developed by ComposeGears 2024
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
