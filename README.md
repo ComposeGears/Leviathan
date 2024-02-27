@@ -10,7 +10,7 @@
 
 
 Add the dependency below to your **module**'s `build.gradle.kts` file:
-#### Android only
+#### Android / jvm
 ```kotlin
 dependencies {
    implementation("io.github.composegears:leviathan:$version")
