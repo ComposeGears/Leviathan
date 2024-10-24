@@ -1,3 +1,7 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,18 +16,25 @@ group = libName
 version = libVersion
 
 kotlin {
+    explicitApi()
+
     jvm()
     androidTarget {
         publishLibraryVariants("release")
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
         }
     }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        binaries.executable()
+        nodejs()
+    }
 
     sourceSets {
         val commonMain by getting {

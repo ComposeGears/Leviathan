@@ -1,60 +1,61 @@
 package com.composegears.leviathan
 
-import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
+
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING, message = "Developed for testing purposes")
+public annotation class LeviathanDelicateApi
 
 /**
  * Service locator di base
  */
-abstract class Leviathan {
-    companion object;
+public abstract class Leviathan {
+    public companion object;
 
-    //----- Providers -----
+    protected fun <T> factoryOf(provider: () -> T): DependencyProvider<T> =
+        DependencyProvider(Factory(provider))
 
-    /**
-     * Provide same instance of service for all requests (lazy initialization)
-     *
-     * @param factory factory method to create service objects
-     */
-    protected fun <T> instance(factory: () -> T): ReadOnlyProperty<Leviathan, T> = instance(true, factory)
+    protected fun <T> instanceOf(lazy: Boolean = true, provider: () -> T): DependencyProvider<T> =
+        if (lazy) DependencyProvider(Instance(provider))
+        else provider().let { factoryOf { it } }
 
-    /**
-     * Provide same instance of service for all requests
-     *
-     * @param lazy true to create service upon first call, false to create upon declaration
-     * @param factory factory method to create service objects
-     */
-    protected fun <T> instance(lazy: Boolean, factory: () -> T): ReadOnlyProperty<Leviathan, T> {
-        return if (lazy) {
-            LazyServiceDelegate(factory)
-        } else {
-            val service = factory()
-            ProvidableServiceDelegate { service }
-        }
+    protected operator fun <T> DependencyProvider<T>.getValue(
+        di: Any?, property: KProperty<*>
+    ): Dependency<T> = dependency
+}
+
+public abstract class Dependency<T> internal constructor() {
+    public abstract fun get(): T
+
+    public operator fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
+
+    @LeviathanDelicateApi
+    public abstract fun overrideWith(provider: (() -> T)?)
+}
+
+public class DependencyProvider<T> internal constructor(
+    internal val dependency: Dependency<T>
+)
+
+internal class Instance<T>(provider: () -> T) : Dependency<T>() {
+    private var oValue: T? = null
+    private val dependency by lazy(provider)
+
+    override fun get(): T = oValue ?: dependency
+
+    @OptIn(LeviathanDelicateApi::class)
+    override fun overrideWith(provider: (() -> T)?) {
+        oValue = provider?.invoke()
     }
+}
 
-    /**
-     * Provide new service on each access
-     *
-     * @param factory factory method to create service
-     */
-    protected fun <T> factory(factory: () -> T): ReadOnlyProperty<Leviathan, T> {
-        return ProvidableServiceDelegate { factory() }
-    }
+internal class Factory<T>(private val provider: () -> T) : Dependency<T>() {
+    private var oValueProvider: (() -> T)? = null
 
-    //----- Helpers -----
-    /**
-     * Lazy service implementation
-     */
-    class LazyServiceDelegate<T>(provider: () -> T) : ReadOnlyProperty<Leviathan, T> {
-        private val service by lazy(provider)
-        override fun getValue(thisRef: Leviathan, property: KProperty<*>): T = service
-    }
+    override fun get(): T = if (oValueProvider != null) oValueProvider!!() else provider()
 
-    /**
-     * Factory service implementation
-     */
-    class ProvidableServiceDelegate<T>(val provider: () -> T) : ReadOnlyProperty<Leviathan, T> {
-        override fun getValue(thisRef: Leviathan, property: KProperty<*>): T = provider()
+    @OptIn(LeviathanDelicateApi::class)
+    override fun overrideWith(provider: (() -> T)?) {
+        oValueProvider = provider
     }
 }

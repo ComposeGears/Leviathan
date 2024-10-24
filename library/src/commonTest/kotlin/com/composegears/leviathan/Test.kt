@@ -38,7 +38,7 @@ class Tests {
     private val esl = ExternalServices()
 
     @Test
-    fun `instance - provide same objects`() {
+    fun instance_provide_same_objects() {
         val sl = ServiceLocator(esl)
         val instance = sl.instance
         assertEquals(sl.instance, sl.instance)
@@ -46,13 +46,13 @@ class Tests {
     }
 
     @Test
-    fun `factory - provide new objects on every access`() {
+    fun factory_provide_new_objects_on_every_access() {
         val sl = ServiceLocator(esl)
         assertNotEquals(sl.factory, sl.factory)
     }
 
     @Test
-    fun `dependInstance - use same object as used instance`() {
+    fun dependInstance_use_same_object_as_used_instance() {
         val sl = ServiceLocator(esl)
         val s = sl.instance
         val dps = sl.dependInstance
@@ -61,7 +61,7 @@ class Tests {
     }
 
     @Test
-    fun `delegatedInstance - provide same object and original service`() {
+    fun delegatedInstance_provide_same_object_and_original_service() {
         val sl = ServiceLocator(esl)
         val ess = esl.service
         val dps = sl.delegatedInstance
@@ -71,7 +71,7 @@ class Tests {
 
 
     @Test
-    fun `cyclicService - cyclic services provide appropriate dependencies`() {
+    fun cyclicService_cyclic_services_provide_appropriate_dependencies() {
         val sl = ServiceLocator(esl)
         val c1 = sl.cyclicDep1
         val c2 = sl.cyclicDep2
@@ -82,7 +82,7 @@ class Tests {
     }
 
     @Test
-    fun `global - provides appropriate instances`() {
+    fun global_provides_appropriate_instances() {
         val sl = ServiceLocator(esl)
         assertEquals(sl.instance, sl.instance)
         assertEquals(sl.nonLazyInstance, sl.nonLazyInstance)
