@@ -1,0 +1,29 @@
+public abstract class com/composegears/leviathan/Dependency {
+	public abstract fun get ()Ljava/lang/Object;
+	public final fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public abstract fun overrideWith (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class com/composegears/leviathan/DependencyProvider {
+}
+
+public abstract class com/composegears/leviathan/LateInitDependency : com/composegears/leviathan/Dependency {
+	public abstract fun provides (Lkotlin/jvm/functions/Function0;)V
+}
+
+public abstract class com/composegears/leviathan/Leviathan {
+	public static final field Companion Lcom/composegears/leviathan/Leviathan$Companion;
+	public fun <init> ()V
+	protected final fun factoryOf (Lkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/DependencyProvider;
+	protected final fun getValue (Lcom/composegears/leviathan/DependencyProvider;Ljava/lang/Object;Lkotlin/reflect/KProperty;)Lcom/composegears/leviathan/Dependency;
+	protected final fun instanceOf (Lkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/DependencyProvider;
+	protected final fun instanceOf (ZLkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/DependencyProvider;
+	protected final fun lateInitInstance ()Lcom/composegears/leviathan/DependencyProvider;
+}
+
+public final class com/composegears/leviathan/Leviathan$Companion {
+}
+
+public abstract interface annotation class com/composegears/leviathan/LeviathanDelicateApi : java/lang/annotation/Annotation {
+}
+
