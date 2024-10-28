@@ -9,4 +9,5 @@ local.properties
 captures
 .externalNativeBuild
 .cxx
+.kotlin
 publish.bat

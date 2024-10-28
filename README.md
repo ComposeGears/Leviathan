@@ -10,38 +10,50 @@
 
 
 Add the dependency below to your **module**'s `build.gradle.kts` file:
-#### Android / jvm
-```kotlin
-dependencies {
-   implementation("io.github.composegears:leviathan:$version")
-}
-```
+
+| Module            |                                                                                                  Version                                                                                                  |
+|-------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| leviathan         |         [![Maven Central](https://img.shields.io/maven-central/v/io.github.composegears/leviathan.svg?style=flat-square)](https://central.sonatype.com/artifact/io.github.composegears/leviathan)         |
+| leviathan-compose | [![Maven Central](https://img.shields.io/maven-central/v/io.github.composegears/leviathan-compose.svg?style=flat-square)](https://central.sonatype.com/artifact/io.github.composegears/leviathan-compose) |
 
 #### Multiplatform
+
 ```kotlin
 sourceSets {
     commonMain.dependencies {
+        // core library
         implementation("io.github.composegears:leviathan:$version")
+        // Compose integration 
+        implementation("io.github.composegears:leviathan-compose:$version")
     }
 }
 ```
+
+#### Android / jvm
+
+Use same dependencies in the `dependencies { ... }` section
+
 
 Base usage
 ----------
 
 Create `Module` (recommend to use `object`) and extends from `Leviathan` class
 
-Create fields using one of 2 functions:
+Create fields using one functions:
 
-- Use `by instance` to create single-object-delegate (same instance upon every access)
-- Use `by factory` to create factory-delegate (new instance upon each access)
+- Use `by instanceOf` to create single-object-delegate (same instance upon every access)
+- Use `by lateInitInstance` to create instance-based late-init dependency (ps: you need to call `provides` method before
+  access)
+- Use `by factoryOf` to create factory-delegate (new instance upon each access)
 
-Use `by (instance|factory)<Interface>{InterfaceImpl}` to hide impl class
+Both functions return a dependency provider instance and the type of field will be `Dependency<Type>`
+
+To retreive dependency use either `Module.dependency.get()` or define a property `val dep by Module.dependency`
 
 Simple case
 -----------
 
-Declare you repositories
+Declare you dependencies
 
 ```kotlin
 class SampleRepository()
@@ -55,12 +67,12 @@ class SampleInterfaceRepoImpl : SampleInterfaceRepo
 Create module
 
 ```kotlin
-class Module : Leviathan() {
-    val lazyRepository by instance(::SampleRepository)
-    val nonLazyRepository by instance(false, ::SampleRepository)
-    val repositoryWithParam by factory { SampleRepositoryWithParam(1) }
-    val repositoryWithDependency by instance { SampleRepositoryWithDependency(lazyRepository) }
-    val interfaceRepo by instance<SampleInterfaceRepo>(::SampleInterfaceRepoImpl)
+object Module : Leviathan() {
+    val lazyRepository by instanceOf(::SampleRepository)
+    val nonLazyRepository by instanceOf(false, ::SampleRepository)
+    val repositoryWithParam by factoryOf { SampleRepositoryWithParam(1) }
+    val repositoryWithDependency by instanceOf { SampleRepositoryWithDependency(lazyRepository.get()) }
+    val interfaceRepo by instanceOf<SampleInterfaceRepo>(::SampleInterfaceRepoImpl)
 }
 ```
 
@@ -68,18 +80,14 @@ Dependencies usage:
 
 ```kotlin
 fun foo() {
-    val repo = Module.lazyRepository
+    val repo = Module.lazyRepository.get()
     //...  
 }
 
 class Model(
-    val repo: SampleRepository = Module.lazyRepository
+    val dep1: SampleRepository = Module.lazyRepository.get()
 ) {
-    //...
-}
-
-class Model() {
-    private val repo = Module.lazyRepository
+    val dep2: SampleRepository by Module.nonLazyRepository
     //...
 }
 
@@ -88,37 +96,56 @@ class Model() {
 Mutli-module case
 -----------------
 
-- HttpClient
-- WeatherRepository <- HttpClient
-- NewsRepository <- HttpClient
-- App <- WeatherRepository, NewsRepository
+Interface based approach
 
-1) Http Client Module
-   ```kotlin
-   class HttpClient {
-       // ...
-   }
+```kotlin
+// ----------Module 1-------------
+//Dependency 
+class Dep {
+    fun foo() {}
+}
+
+// ----------Module 2-------------
+// Dependency provider interface
+interface ICore {
+    val dep: Dependency<Dep>
+}
+
+// Dependency provider implementation
+internal class CoreImpl : Leviathan(), ICore {
+    override val dep by instanceOf { Dep() }
+}
+// Dependency provider accessor
+val Core: ICore = CoreImpl()
+
+// ----------Module 3-------------    
+// Usage
+fun boo() {
+    val dep by Core.dep
+} 
    ```
-2) Weather service module
-   ```kotlin
-   class WeatherRepository(client: HttpClient) {
-       // ...
-   }
-   ```
-3) News service module
-   ```kotlin
-   class NewsRepository(client: HttpClient) {
-      // ...
-   }
-   ```
-4) App service module
-   ```kotlin
-   object AppModule : Leviathan() {
-       private val httpClient by instance { HttpClient() }
-       val weatherRepository by instance { WeatherRepository(httpClient) }
-       val newsRepository by instance { NewRepository(httpClient) }
-   }
-   ```
+
+Simple approach
+
+```kotlin
+// ----------Module 1-------------
+//Dependency
+class Dep {
+    fun foo() {}
+}
+
+// ----------Module 2-------------
+// Dependency provider & accessor
+object Core : Leviathan() {
+    val dep by instanceOf { Dep() }
+}
+
+// ----------Module 3-------------
+// Usage
+fun boo() {
+    val dep by Core.dep
+}
+```
 
 Advanced case
 -------------
@@ -133,45 +160,78 @@ In order to create good & testable classes recommend to use advanced scenario
 2) declare module interface (data/domain modules)
     ```kotlin
     interface DataModule {
-        val dataRepository: DataRepository
+        val dataRepository: Dependency<DataRepository>
     }
     
     interface ApiModule {
-        val apiRepository: ApiRepository
+        val apiRepository: Dependency<ApiRepository>
     }    
     ```
 3) Create `AppModule` and inherit from interfaces(step #2) and `Leviathan`
     ```kotlin
     object AppModule : DataModule, ApiModule, Leviathan() {
-        override val dataRepository: DataRepository by instance(::DataRepository)
-        override val apiRepository: ApiRepository by instance(::ApiRepository)
+        override val dataRepository: Dependency<DataRepository> by instance(::DataRepository)
+        override val apiRepository: Dependency<ApiRepository> by instance(::ApiRepository)
     }
     ```
 4) Create Models (or any other classes) base on interfaces from step #2
     ```kotlin
     class Model(apiModule: ApiModule = AppModule){
-        val api = apiModule.apiRepository
+        val api: ApiRepository by apiModule.apiRepository
    
         fun foo(){/*...*/}
     }
     ```
-   
+
 Now you can make tests and have easy way to mock your data:
 
 ```kotlin
 @Test
-fun ModelTests(){
-    val model = Model(object : ApiModule {
-        override val apiRepository: ApiRepository
-            get() = ApiRepository() // mock
+fun ModelTests() {
+    val model = Model(object : Leviathan(), ApiModule {
+        override val apiRepository by instanceOf { MyMockApiRepository() }
     })
+    model.foo()
+
+    //-----or-----------
+
+    AppModule.apiRepository.overrideWith { MyMockApiRepository() }
+    val model = Model()
     model.foo()
 }
 ```
 
+Compose
+-------------
+
+Dependencies access in compose code:
+```kotlin
+class Repository(){
+    fun foo(){}
+}
+
+object Module : Leviathan(){
+    val dependency by instanceOf { Repository() }
+}
+
+@Composable
+fun SomeComposable(){
+    val dependency = leviathanInject { Module.dependency }
+    ///...
+}
+```
+
+## Contributors
+
+Thank you for your help! ❤️
+
+<a href="https://github.com/ComposeGears/Leviathan/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ComposeGears/Leviathan" />
+</a>
+
 
 # License
-```xml
+```
 Developed by ComposeGears 2024
 
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,0 +1,4 @@
+public final class com/composegears/leviathan/compose/LeviathanComposeKt {
+	public static final fun leviathanInject (Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+

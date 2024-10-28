@@ -1,8 +1,4 @@
-rootProject.name = "LeviathanApp"
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
 pluginManagement {
-    includeBuild("plugins")
     repositories {
         google()
         gradlePluginPortal()
@@ -18,5 +14,4 @@ dependencyResolutionManagement {
     }
 }
 
-include(":leviathan")
-include(":leviathan-compose")
+rootProject.name = "plugins"
