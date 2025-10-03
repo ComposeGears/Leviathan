@@ -50,7 +50,7 @@ class Tests {
     // DIScope tests
 
     @Test
-    fun `DIScope # executes close actions on close`() {
+    fun `DIScope - executes close actions on close`() {
         val scope = DIScope()
         var executed = false
         scope.onClose { executed = true }
@@ -59,7 +59,7 @@ class Tests {
     }
 
     @Test
-    fun `DIScope # executes multiple close actions in order`() {
+    fun `DIScope - executes multiple close actions in order`() {
         val scope = DIScope()
         val executionOrder = mutableListOf<Int>()
         scope.onClose { executionOrder.add(1) }
@@ -70,7 +70,7 @@ class Tests {
     }
 
     @Test
-    fun `DIScope # clears close actions after close`() {
+    fun `DIScope - clears close actions after close`() {
         val scope = DIScope()
         var count = 0
         scope.onClose { count++ }
@@ -80,7 +80,7 @@ class Tests {
     }
 
     @Test
-    fun `DIScope-GLOBAL # does not execute close actions`() {
+    fun `DIScope-GLOBAL - does not execute close actions`() {
         var executed = false
         DIScope.GLOBAL.onClose { executed = true }
         DIScope.GLOBAL.close()
@@ -89,7 +89,7 @@ class Tests {
 
     // FactoryDependency tests with useCache=true
     @Test
-    fun `cachedFactory # caches instances within same scope`() {
+    fun `cachedFactory - caches instances within same scope`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
@@ -101,7 +101,7 @@ class Tests {
     }
 
     @Test
-    fun `cachedFactory # creates new instances in different scopes`() {
+    fun `cachedFactory - creates new instances in different scopes`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
@@ -115,7 +115,7 @@ class Tests {
 
     // FactoryDependency tests with useCache=false
     @Test
-    fun `alwaysNewFactory # creates new instances on each call`() {
+    fun `alwaysNewFactory - creates new instances on each call`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
@@ -131,7 +131,7 @@ class Tests {
 
     // InstanceDependency tests with keepAlive=false (auto-close)
     @Test
-    fun `autoCloseInstance # reuses instance within same scope`() {
+    fun `autoCloseInstance - reuses instance within same scope`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
@@ -143,7 +143,7 @@ class Tests {
     }
 
     @Test
-    fun `autoCloseInstance # creates same instances in different scopes`() {
+    fun `autoCloseInstance - creates same instances in different scopes`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
@@ -156,7 +156,7 @@ class Tests {
     }
 
     @Test
-    fun `autoCloseInstance # nullifies instance when all scopes close`() {
+    fun `autoCloseInstance - nullifies instance when all scopes close`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
@@ -178,7 +178,7 @@ class Tests {
 
     // InstanceDependency tests with keepAlive=true
     @Test
-    fun `keepAliveInstance # persists across different scopes`() {
+    fun `keepAliveInstance - persists across different scopes`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
@@ -191,7 +191,7 @@ class Tests {
     }
 
     @Test
-    fun `keepAliveInstance # survives scope closure`() {
+    fun `keepAliveInstance - survives scope closure`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
@@ -207,7 +207,7 @@ class Tests {
 
     // DependencyInitializationScope tests
     @Test
-    fun `inject # resolves dependencies during initialization`() {
+    fun `inject - resolves dependencies during initialization`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
@@ -219,7 +219,7 @@ class Tests {
     }
 
     @Test
-    fun `inject # works with nested dependencies`() {
+    fun `inject - works with nested dependencies`() {
         val scope = DIScope()
 
         // Create a more complex dependency chain
@@ -239,7 +239,7 @@ class Tests {
 
     // Cyclic dependency tests
     @Test
-    fun `cyclicDep1 # resolves cyclic dependencies correctly`() {
+    fun `cyclicDep1 - resolves cyclic dependencies correctly`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
@@ -256,7 +256,7 @@ class Tests {
 
     // External dependency tests
     @Test
-    fun `external # accesses external service dependency`() {
+    fun `external - accesses external service dependency`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
@@ -268,7 +268,7 @@ class Tests {
     }
 
     @Test
-    fun `external # maintains independence from main locator`() {
+    fun `external - maintains independence from main locator`() {
         val externalServices1 = ExternalServices()
         val externalServices2 = ExternalServices()
         val serviceLocator1 = ServiceLocator(externalServices1)
@@ -283,7 +283,7 @@ class Tests {
 
     // Scope behavior combination tests
     @Test
-    fun `mixed dependencies # behave correctly in same scope`() {
+    fun `mixed dependencies - behave correctly in same scope`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
@@ -304,7 +304,7 @@ class Tests {
     }
 
     @Test
-    fun `mixed dependencies # behave correctly across scopes`() {
+    fun `mixed dependencies - behave correctly across scopes`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
