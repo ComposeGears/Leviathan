@@ -6,4 +6,6 @@
 // - Show declarations: true
 
 // Library unique name: <io.github.composegears:leviathan-compose>
-final fun <#A: kotlin/Any?> com.composegears.leviathan.compose/leviathanInject(kotlin/Function0<com.composegears.leviathan/Dependency<#A>>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/leviathanInject|leviathanInject(kotlin.Function0<com.composegears.leviathan.Dependency<0:0>>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> (androidx.lifecycle/ViewModel).com.composegears.leviathan.compose/inject(com.composegears.leviathan/Dependency<#A>): #A // com.composegears.leviathan.compose/inject|inject@androidx.lifecycle.ViewModel(com.composegears.leviathan.Dependency<0:0>){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> com.composegears.leviathan.compose/inject(com.composegears.leviathan/Dependency<#A>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/inject|inject(com.composegears.leviathan.Dependency<0:0>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]
+final fun <#A: kotlin/Any?> com.composegears.leviathan.compose/inject(kotlin/Function0<com.composegears.leviathan/Dependency<#A>>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/inject|inject(kotlin.Function0<com.composegears.leviathan.Dependency<0:0>>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]

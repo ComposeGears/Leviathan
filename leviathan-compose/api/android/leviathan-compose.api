@@ -1,4 +1,6 @@
 public final class com/composegears/leviathan/compose/LeviathanComposeKt {
-	public static final fun leviathanInject (Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public static final fun inject (Landroidx/lifecycle/ViewModel;Lcom/composegears/leviathan/Dependency;)Ljava/lang/Object;
+	public static final fun inject (Lcom/composegears/leviathan/Dependency;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public static final fun inject (Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
 }
 

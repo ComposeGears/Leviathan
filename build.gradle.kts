@@ -1,9 +1,8 @@
 import io.gitlab.arturbosch.detekt.DetektPlugin
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.android.kotlin.multiplatform.library) apply false
+    alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.jetbrains.compose) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -42,19 +41,16 @@ allprojects {
     }
 }
 
-subprojects {
-    tasks.withType<KotlinCompile>().configureEach {
-        val outPath = layout.buildDirectory.dir("compose_compiler").get().asFile.absoluteFile
+// check ABI
+tasks.register("checkAbi") {
+    dependsOn(":leviathan:checkLegacyAbi")
+    dependsOn(":leviathan-compose:checkLegacyAbi")
+}
 
-        compilerOptions {
-            if (project.findProperty("composeCompilerReports") == "true") {
-                composeCompiler {
-                    reportsDestination = outPath
-                    metricsDestination = outPath
-                }
-            }
-        }
-    }
+// update ABI
+tasks.register("updateAbi") {
+    dependsOn(":leviathan:updateLegacyAbi")
+    dependsOn(":leviathan-compose:updateLegacyAbi")
 }
 
 createM2PTask()
