@@ -1,5 +1,5 @@
 [versions]
-agp = "8.5.0"
+agp = "8.12.0"
 android-compileSdk = "34"
 android-minSdk = "21"
 
@@ -20,4 +20,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-m2p = { id = "io.github.composegears.m2p", version = "unspecified" }
+m2p = { id = "io.github.composegears.m2p" }
