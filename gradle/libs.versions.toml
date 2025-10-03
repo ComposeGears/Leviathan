@@ -5,7 +5,7 @@ android-minSdk = "21"
 
 detekt = "1.23.7"
 jetbrains-compose = "1.6.11"
-kotlin = "2.0.21"
+kotlin = "2.2.20"
 
 [libraries]
 detekt-compose = "io.nlopez.compose.rules:detekt:0.4.15"
