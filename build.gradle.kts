@@ -44,12 +44,12 @@ allprojects {
 // check ABI
 tasks.register("checkAbi") {
     dependsOn(":leviathan:checkLegacyAbi")
-    dependsOn(":leviathan:checkLegacyAbi")
+    dependsOn(":leviathan-compose:checkLegacyAbi")
 }
 
 // update ABI
 tasks.register("updateAbi") {
-    dependsOn(":leviathan-compose:updateLegacyAbi")
+    dependsOn(":leviathan:updateLegacyAbi")
     dependsOn(":leviathan-compose:updateLegacyAbi")
 }
 
