@@ -53,5 +53,5 @@ android {
 }
 
 m2p {
-    description = "KMM DI implementation"
+    description = "KMP DI implementation"
 }
