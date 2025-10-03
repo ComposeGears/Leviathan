@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: gradle/actions/setup-gradle@v5
       - name: Check ABI
-        run: ./gradlew apiCheck
+        run: ./gradlew checkLegacyAbi
 
   verify-libs:
     runs-on: ubuntu-latest

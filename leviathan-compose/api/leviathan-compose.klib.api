@@ -1,0 +1,9 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <io.github.composegears:leviathan-compose>
+final fun <#A: kotlin/Any?> com.composegears.leviathan.compose/leviathanInject(kotlin/Function0<com.composegears.leviathan/Dependency<#A>>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/leviathanInject|leviathanInject(kotlin.Function0<com.composegears.leviathan.Dependency<0:0>>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]
