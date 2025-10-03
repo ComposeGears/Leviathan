@@ -16,6 +16,11 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+    versionCatalogs {
+        create("leviathan") {
+            from(files("gradle/leviathan.toml"))
+        }
+    }
 }
 
 include(":leviathan")
