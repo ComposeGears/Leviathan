@@ -21,10 +21,6 @@ kotlin {
         enabled = true
     }
 
-    compilerOptions {
-        freeCompilerArgs.addAll("-opt-in=androidx.compose.ui.ExperimentalComposeUiApi")
-    }
-
     jvm()
     androidLibrary {
         namespace = "com.composegears.leviathan.compose"
