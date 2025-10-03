@@ -48,8 +48,8 @@ jobs:
 
       - name: Execute Gradle build
         run: ./gradlew detekt
-        
-      - name: Build leviathan 
+
+      - name: Build leviathan
         run: ./gradlew leviathan:assemble
 
       - name: Build leviathan-compose

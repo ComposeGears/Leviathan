@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.m2p)
 }
 
-version = "2.0.0"
+version = leviathan.versions.leviathan.get()
 
 kotlin {
     explicitApi()
