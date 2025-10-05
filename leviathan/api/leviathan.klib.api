@@ -6,30 +6,37 @@
 // - Show declarations: true
 
 // Library unique name: <io.github.composegears:leviathan>
-open annotation class com.composegears.leviathan/LeviathanDelicateApi : kotlin/Annotation { // com.composegears.leviathan/LeviathanDelicateApi|null[0]
-    constructor <init>() // com.composegears.leviathan/LeviathanDelicateApi.<init>|<init>(){}[0]
-}
-
-abstract class <#A: kotlin/Any?> com.composegears.leviathan/Dependency { // com.composegears.leviathan/Dependency|null[0]
-    abstract fun get(): #A // com.composegears.leviathan/Dependency.get|get(){}[0]
-    abstract fun overrideWith(kotlin/Function0<#A>?) // com.composegears.leviathan/Dependency.overrideWith|overrideWith(kotlin.Function0<1:0>?){}[0]
-    final fun getValue(kotlin/Any?, kotlin.reflect/KProperty<*>): #A // com.composegears.leviathan/Dependency.getValue|getValue(kotlin.Any?;kotlin.reflect.KProperty<*>){}[0]
-}
-
-abstract class <#A: kotlin/Any?> com.composegears.leviathan/LateInitDependency : com.composegears.leviathan/Dependency<#A> { // com.composegears.leviathan/LateInitDependency|null[0]
-    abstract fun provides(kotlin/Function0<#A>) // com.composegears.leviathan/LateInitDependency.provides|provides(kotlin.Function0<1:0>){}[0]
+abstract interface <#A: kotlin/Any?> com.composegears.leviathan/Dependency { // com.composegears.leviathan/Dependency|null[0]
+    abstract fun injectedIn(com.composegears.leviathan/DIScope): #A // com.composegears.leviathan/Dependency.injectedIn|injectedIn(com.composegears.leviathan.DIScope){}[0]
 }
 
 abstract class com.composegears.leviathan/Leviathan { // com.composegears.leviathan/Leviathan|null[0]
     constructor <init>() // com.composegears.leviathan/Leviathan.<init>|<init>(){}[0]
 
-    final fun <#A1: kotlin/Any?, #B1: com.composegears.leviathan/Dependency<#A1>> (com.composegears.leviathan/DependencyProvider<#B1>).getValue(kotlin/Any?, kotlin.reflect/KProperty<*>): #B1 // com.composegears.leviathan/Leviathan.getValue|getValue@com.composegears.leviathan.DependencyProvider<0:1>(kotlin.Any?;kotlin.reflect.KProperty<*>){0§<kotlin.Any?>;1§<com.composegears.leviathan.Dependency<0:0>>}[0]
-    final fun <#A1: kotlin/Any?> factoryOf(kotlin/Function0<#A1>): com.composegears.leviathan/DependencyProvider<com.composegears.leviathan/Dependency<#A1>> // com.composegears.leviathan/Leviathan.factoryOf|factoryOf(kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
-    final fun <#A1: kotlin/Any?> instanceOf(kotlin/Boolean, kotlin/Function0<#A1>): com.composegears.leviathan/DependencyProvider<com.composegears.leviathan/Dependency<#A1>> // com.composegears.leviathan/Leviathan.instanceOf|instanceOf(kotlin.Boolean;kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
-    final fun <#A1: kotlin/Any?> instanceOf(kotlin/Function0<#A1>): com.composegears.leviathan/DependencyProvider<com.composegears.leviathan/Dependency<#A1>> // com.composegears.leviathan/Leviathan.instanceOf|instanceOf(kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
-    final fun <#A1: kotlin/Any?> lateInitInstance(): com.composegears.leviathan/DependencyProvider<com.composegears.leviathan/LateInitDependency<#A1>> // com.composegears.leviathan/Leviathan.lateInitInstance|lateInitInstance(){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> factoryOf(kotlin/Boolean = ..., kotlin/Function1<com.composegears.leviathan/DependencyInitializationScope, #A1>): com.composegears.leviathan/Dependency<#A1> // com.composegears.leviathan/Leviathan.factoryOf|factoryOf(kotlin.Boolean;kotlin.Function1<com.composegears.leviathan.DependencyInitializationScope,0:0>){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> instanceOf(kotlin/Boolean = ..., kotlin/Function1<com.composegears.leviathan/DependencyInitializationScope, #A1>): com.composegears.leviathan/Dependency<#A1> // com.composegears.leviathan/Leviathan.instanceOf|instanceOf(kotlin.Boolean;kotlin.Function1<com.composegears.leviathan.DependencyInitializationScope,0:0>){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> valueOf(#A1): com.composegears.leviathan/Dependency<#A1> // com.composegears.leviathan/Leviathan.valueOf|valueOf(0:0){0§<kotlin.Any?>}[0]
 
     final object Companion // com.composegears.leviathan/Leviathan.Companion|null[0]
 }
 
-final class <#A: com.composegears.leviathan/Dependency<*>> com.composegears.leviathan/DependencyProvider // com.composegears.leviathan/DependencyProvider|null[0]
+final class <#A: kotlin/Any?> com.composegears.leviathan/ValueDependency : com.composegears.leviathan/Dependency<#A> { // com.composegears.leviathan/ValueDependency|null[0]
+    constructor <init>(#A) // com.composegears.leviathan/ValueDependency.<init>|<init>(1:0){}[0]
+
+    final fun injectedIn(com.composegears.leviathan/DIScope): #A // com.composegears.leviathan/ValueDependency.injectedIn|injectedIn(com.composegears.leviathan.DIScope){}[0]
+}
+
+final class com.composegears.leviathan/DependencyInitializationScope { // com.composegears.leviathan/DependencyInitializationScope|null[0]
+    final fun <#A1: kotlin/Any?> inject(com.composegears.leviathan/Dependency<#A1>): #A1 // com.composegears.leviathan/DependencyInitializationScope.inject|inject(com.composegears.leviathan.Dependency<0:0>){0§<kotlin.Any?>}[0]
+}
+
+open class com.composegears.leviathan/DIScope { // com.composegears.leviathan/DIScope|null[0]
+    constructor <init>() // com.composegears.leviathan/DIScope.<init>|<init>(){}[0]
+
+    final fun close() // com.composegears.leviathan/DIScope.close|close(){}[0]
+
+    final object Companion { // com.composegears.leviathan/DIScope.Companion|null[0]
+        final val GLOBAL // com.composegears.leviathan/DIScope.Companion.GLOBAL|{}GLOBAL[0]
+            final fun <get-GLOBAL>(): com.composegears.leviathan/DIScope // com.composegears.leviathan/DIScope.Companion.GLOBAL.<get-GLOBAL>|<get-GLOBAL>(){}[0]
+    }
+}

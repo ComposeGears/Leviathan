@@ -1,29 +1,37 @@
-public abstract class com/composegears/leviathan/Dependency {
-	public abstract fun get ()Ljava/lang/Object;
-	public final fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
-	public abstract fun overrideWith (Lkotlin/jvm/functions/Function0;)V
+public class com/composegears/leviathan/DIScope {
+	public static final field Companion Lcom/composegears/leviathan/DIScope$Companion;
+	public fun <init> ()V
+	public final fun close ()V
 }
 
-public final class com/composegears/leviathan/DependencyProvider {
+public final class com/composegears/leviathan/DIScope$Companion {
+	public final fun getGLOBAL ()Lcom/composegears/leviathan/DIScope;
 }
 
-public abstract class com/composegears/leviathan/LateInitDependency : com/composegears/leviathan/Dependency {
-	public abstract fun provides (Lkotlin/jvm/functions/Function0;)V
+public abstract interface class com/composegears/leviathan/Dependency {
+	public abstract fun injectedIn (Lcom/composegears/leviathan/DIScope;)Ljava/lang/Object;
+}
+
+public final class com/composegears/leviathan/DependencyInitializationScope {
+	public final fun inject (Lcom/composegears/leviathan/Dependency;)Ljava/lang/Object;
 }
 
 public abstract class com/composegears/leviathan/Leviathan {
 	public static final field Companion Lcom/composegears/leviathan/Leviathan$Companion;
 	public fun <init> ()V
-	protected final fun factoryOf (Lkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/DependencyProvider;
-	protected final fun getValue (Lcom/composegears/leviathan/DependencyProvider;Ljava/lang/Object;Lkotlin/reflect/KProperty;)Lcom/composegears/leviathan/Dependency;
-	protected final fun instanceOf (Lkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/DependencyProvider;
-	protected final fun instanceOf (ZLkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/DependencyProvider;
-	protected final fun lateInitInstance ()Lcom/composegears/leviathan/DependencyProvider;
+	protected final fun factoryOf (ZLkotlin/jvm/functions/Function1;)Lcom/composegears/leviathan/Dependency;
+	public static synthetic fun factoryOf$default (Lcom/composegears/leviathan/Leviathan;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/composegears/leviathan/Dependency;
+	protected static final fun getValue (Lcom/composegears/leviathan/Dependency;Lcom/composegears/leviathan/Leviathan;Lkotlin/reflect/KProperty;)Lcom/composegears/leviathan/Dependency;
+	protected final fun instanceOf (ZLkotlin/jvm/functions/Function1;)Lcom/composegears/leviathan/Dependency;
+	public static synthetic fun instanceOf$default (Lcom/composegears/leviathan/Leviathan;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/composegears/leviathan/Dependency;
+	protected final fun valueOf (Ljava/lang/Object;)Lcom/composegears/leviathan/Dependency;
 }
 
 public final class com/composegears/leviathan/Leviathan$Companion {
 }
 
-public abstract interface annotation class com/composegears/leviathan/LeviathanDelicateApi : java/lang/annotation/Annotation {
+public final class com/composegears/leviathan/ValueDependency : com/composegears/leviathan/Dependency {
+	public fun <init> (Ljava/lang/Object;)V
+	public fun injectedIn (Lcom/composegears/leviathan/DIScope;)Ljava/lang/Object;
 }
 
