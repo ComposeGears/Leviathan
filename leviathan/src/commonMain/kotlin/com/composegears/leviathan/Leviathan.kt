@@ -43,15 +43,45 @@ public interface Dependency<T> {
 }
 
 /**
- * A dependency that always provides the same constant value.
+ * A dependency that always provides the same value.
+ * The value can be updated using the [provides] method.
  */
-public class ValueDependency<T>(
-    private val value: T
+public class ValueDependency<T> internal constructor(
+    private var value: T
 ) : Dependency<T> {
     override fun injectedIn(scope: DIScope): T = value
+
+    /**
+     * Updates the value of the dependency.
+     */
+    public fun provides(newValue: T) {
+        value = newValue
+    }
 }
 
-internal class FactoryDependency<T>(
+/**
+ * A dependency that provides a value using a provider function.
+ * The provider function can be updated to supply a new value.
+ */
+public class ProvidableDependency<T> internal constructor(
+    private var provider: () -> T
+) : Dependency<T> {
+    override fun injectedIn(scope: DIScope): T = provider()
+
+    /**
+     * Updates the provider function to supply a new value.
+     */
+    public fun provides(valueProvider: () -> T) {
+        provider = valueProvider
+    }
+}
+
+/**
+ * A dependency that provides a new instance using a factory function.
+ * If [useCache] is true, the same instance will be provided every time the dependency
+ * is injected within the same [DIScope]. If false, a new instance will be created every time.
+ */
+public class FactoryDependency<T> internal constructor(
     private val useCache: Boolean,
     private val factory: DependencyInitializationScope.() -> T
 ) : Dependency<T> {
@@ -69,7 +99,12 @@ internal class FactoryDependency<T>(
         } else factory(DependencyInitializationScope(scope))
 }
 
-internal class InstanceDependency<T>(
+/**
+ * A dependency that provides a singleton instance using a factory function.
+ * If [keepAlive] is true, the instance will be kept alive after being injected at least once.
+ * If false, the instance will be destroyed as soon as the last [DIScope] using it is closed.
+ */
+public class InstanceDependency<T> internal constructor(
     private val keepAlive: Boolean,
     private val factory: DependencyInitializationScope.() -> T
 ) : Dependency<T> {
@@ -98,7 +133,7 @@ internal class InstanceDependency<T>(
 
 /**
  * Base class for defining a module of dependencies.
- * Extend this class and use [valueOf], [factoryOf] and [instanceOf] to define dependencies.
+ * Extend this class and use [valueOf], [providableOf], [factoryOf] and [instanceOf] to define dependencies.
  *
  * Example:
  * ```
@@ -113,6 +148,7 @@ internal class InstanceDependency<T>(
  *     }
  *     val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
  *     val constantValue by valueOf(42)
+ *     val providable by providableOf { 34 }
  * }
  *
  * // ----- Usage -----
@@ -140,6 +176,8 @@ internal class InstanceDependency<T>(
  * fun foo() {
  *     val scope = DIScope()
  *     val repo1 = Module.autoCloseRepository.injectedIn(scope)
+ *     // update providable value
+ *     (Module.providable as? ProvidableDependency<Int>)?.provides { 21 }
  *     ...
  *     scope.close()
  * }
@@ -154,16 +192,28 @@ public abstract class Leviathan {
         ): Dependency<T> = this
     }
 
-    /** Defines a dependency as a constant value.
-     *
-     * The same instance will be provided every time the dependency is injected.
+    /**
+     * Defines a dependency as a value.
+     * The value can be updated using the [ValueDependency.provides] method.
+     * The value will be provided every time the dependency is injected.
      */
     protected fun <T> valueOf(
         value: T
     ): Dependency<T> =
         ValueDependency(value)
 
-    /** Defines a dependency as a factory function.
+    /**
+     * Defines a dependency as a providable function.
+     * The provider function can be updated using [ProvidableDependency.provides] method.
+     * The instance from the provider will be provided every time the dependency is injected.
+     */
+    protected fun <T> providableOf(
+        provider: () -> T
+    ): ProvidableDependency<T> =
+        ProvidableDependency(provider)
+
+    /**
+     * Defines a dependency as a factory function.
      * If [useCache] is true (default), the same instance will be provided every time the dependency
      * is injected within the same [DIScope]. If false, a new instance will be created every time.
      */
@@ -173,7 +223,8 @@ public abstract class Leviathan {
     ): Dependency<T> =
         FactoryDependency(useCache, factory)
 
-    /** Defines a dependency as a singleton instance.
+    /**
+     * Defines a dependency as a singleton instance.
      * If [keepAlive] is true, the instance will be kept alive after being injected at least once.
      * If false (default), the instance will be destroyed as soon as the last [DIScope] using it is closed.
      */

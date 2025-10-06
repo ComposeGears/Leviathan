@@ -41,6 +41,12 @@ class ServiceLocator(externalServices: ExternalServices) : Leviathan() {
     // cyclic
     val cyclicDep1: Dependency<CyclicService> by instanceOf { CyclicService { inject(cyclicDep2) } }
     val cyclicDep2: Dependency<CyclicService> by instanceOf { CyclicService { inject(cyclicDep1) } }
+
+    // value
+    val valueDep by valueOf(Service())
+
+    // providable
+    val providableDep by providableOf { Service() }
 }
 
 //------------Code------------
@@ -279,6 +285,46 @@ class Tests {
         val external2 = serviceLocator2.external.injectedIn(scope)
 
         assertNotEquals(external1, external2, "External dependencies should be independent")
+    }
+
+    // ValueDependency tests
+    @Test
+    fun `valueDep - provides consistent value instance`() {
+        val externalServices = ExternalServices()
+        val serviceLocator = ServiceLocator(externalServices)
+        val scope1 = DIScope()
+        val scope2 = DIScope()
+        val value1 = serviceLocator.valueDep.injectedIn(scope1)
+        val value2 = serviceLocator.valueDep.injectedIn(scope1)
+        val value3 = serviceLocator.valueDep.injectedIn(scope2)
+        assertEquals(value1, value2, "Value dependency should provide consistent instance")
+        assertEquals(value2, value3, "Value dependency should provide consistent instance")
+    }
+
+    @Test
+    fun `valueDep - reflects changes to the value`() {
+        val externalServices = ExternalServices()
+        val serviceLocator = ServiceLocator(externalServices)
+        val scope = DIScope()
+        val value1 = serviceLocator.valueDep.injectedIn(scope)
+        val newValue = Service()
+        (serviceLocator.valueDep as? ValueDependency<Service>)?.provides(newValue)
+        val value2 = serviceLocator.valueDep.injectedIn(scope)
+        assertNotEquals(newValue, value1, "Updated value should not match old instance")
+        assertEquals(newValue, value2, "Updated value should match new instance")
+    }
+
+    // ProvidableDependency tests
+
+    @Test
+    fun `providableDep - reflect changes to provider`() {
+        val externalServices = ExternalServices()
+        val serviceLocator = ServiceLocator(externalServices)
+        val scope = DIScope()
+        val providedInstance = Service()
+        (serviceLocator.providableDep as? ProvidableDependency<Service>)?.provides { providedInstance }
+        val instance = serviceLocator.providableDep.injectedIn(scope)
+        assertEquals(providedInstance, instance, "Providable dependency should return provided instance")
     }
 
     // Scope behavior combination tests
