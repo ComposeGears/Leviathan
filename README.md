@@ -41,13 +41,14 @@ Create `Module` (recommend to use `object`) and extends from `Leviathan` class
 
 Create fields using these functions:
 
-- Use `by instanceOf(keepAlive){/**/}` to create instance dependency
+- Use `by instanceOf(keepAlive){ value }` to create instance dependency
   - `keepAlive = true` : instance persists across different scopes
   - `keepAlive = false`(default): instance is auto-closed when all scopes close
 - Use `by factoryOf(useCache)` to create factory dependency
   - `useCache = true` (default): caches instances within the same scope
   - `useCache = false`: creates new instance on each access
-- Use `by valueOf(value)` to create value dependency (returns the same value always)
+- Use `by valueOf(value)` to create value dependency (the value may be updated later)
+- Use `by providableOf { value }` to create a providable dependency (provider may be updated later)
 
 All functions return a `Dependency<Type>` instance.
 
@@ -78,6 +79,7 @@ object Module : Leviathan() {
     }
     val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
     val constantValue by valueOf(42)
+    val providable by providableOf { 34 }
 }
 ```
 
@@ -107,6 +109,8 @@ fun ComposeWithDI() {
 fun foo() {
     val scope = DIScope()
     val repo1 = Module.autoCloseRepository.injectedIn(scope)
+    // update providable value
+    (Module.providable as? ProvidableDependency<Int>)?.provides { 21 }
     /*..*/
     scope.close()
 }
