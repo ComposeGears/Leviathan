@@ -6,6 +6,10 @@
 // - Show declarations: true
 
 // Library unique name: <io.github.composegears:leviathan>
+abstract interface <#A: kotlin/Any?, #B: kotlin/Any?> com.composegears.leviathan/MutableDependency : com.composegears.leviathan/Dependency<#A> { // com.composegears.leviathan/MutableDependency|null[0]
+    abstract fun provides(#B) // com.composegears.leviathan/MutableDependency.provides|provides(1:1){}[0]
+}
+
 abstract interface <#A: kotlin/Any?> com.composegears.leviathan/Dependency { // com.composegears.leviathan/Dependency|null[0]
     abstract fun injectedIn(com.composegears.leviathan/DIScope): #A // com.composegears.leviathan/Dependency.injectedIn|injectedIn(com.composegears.leviathan.DIScope){}[0]
 }
@@ -15,7 +19,8 @@ abstract class com.composegears.leviathan/Leviathan { // com.composegears.leviat
 
     final fun <#A1: kotlin/Any?> factoryOf(kotlin/Boolean = ..., kotlin/Function1<com.composegears.leviathan/DependencyInitializationScope, #A1>): com.composegears.leviathan/Dependency<#A1> // com.composegears.leviathan/Leviathan.factoryOf|factoryOf(kotlin.Boolean;kotlin.Function1<com.composegears.leviathan.DependencyInitializationScope,0:0>){0§<kotlin.Any?>}[0]
     final fun <#A1: kotlin/Any?> instanceOf(kotlin/Boolean = ..., kotlin/Function1<com.composegears.leviathan/DependencyInitializationScope, #A1>): com.composegears.leviathan/Dependency<#A1> // com.composegears.leviathan/Leviathan.instanceOf|instanceOf(kotlin.Boolean;kotlin.Function1<com.composegears.leviathan.DependencyInitializationScope,0:0>){0§<kotlin.Any?>}[0]
-    final fun <#A1: kotlin/Any?> providableOf(kotlin/Function0<#A1>): com.composegears.leviathan/ProvidableDependency<#A1> // com.composegears.leviathan/Leviathan.providableOf|providableOf(kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> mutableValueOf(#A1): com.composegears.leviathan/MutableDependency<#A1, #A1> // com.composegears.leviathan/Leviathan.mutableValueOf|mutableValueOf(0:0){0§<kotlin.Any?>}[0]
+    final fun <#A1: kotlin/Any?> providableOf(kotlin/Function0<#A1>): com.composegears.leviathan/MutableDependency<#A1, kotlin/Function0<#A1>> // com.composegears.leviathan/Leviathan.providableOf|providableOf(kotlin.Function0<0:0>){0§<kotlin.Any?>}[0]
     final fun <#A1: kotlin/Any?> valueOf(#A1): com.composegears.leviathan/Dependency<#A1> // com.composegears.leviathan/Leviathan.valueOf|valueOf(0:0){0§<kotlin.Any?>}[0]
 
     final object Companion // com.composegears.leviathan/Leviathan.Companion|null[0]
@@ -29,12 +34,12 @@ final class <#A: kotlin/Any?> com.composegears.leviathan/InstanceDependency : co
     final fun injectedIn(com.composegears.leviathan/DIScope): #A // com.composegears.leviathan/InstanceDependency.injectedIn|injectedIn(com.composegears.leviathan.DIScope){}[0]
 }
 
-final class <#A: kotlin/Any?> com.composegears.leviathan/ProvidableDependency : com.composegears.leviathan/Dependency<#A> { // com.composegears.leviathan/ProvidableDependency|null[0]
+final class <#A: kotlin/Any?> com.composegears.leviathan/ProvidableDependency : com.composegears.leviathan/MutableDependency<#A, kotlin/Function0<#A>> { // com.composegears.leviathan/ProvidableDependency|null[0]
     final fun injectedIn(com.composegears.leviathan/DIScope): #A // com.composegears.leviathan/ProvidableDependency.injectedIn|injectedIn(com.composegears.leviathan.DIScope){}[0]
     final fun provides(kotlin/Function0<#A>) // com.composegears.leviathan/ProvidableDependency.provides|provides(kotlin.Function0<1:0>){}[0]
 }
 
-final class <#A: kotlin/Any?> com.composegears.leviathan/ValueDependency : com.composegears.leviathan/Dependency<#A> { // com.composegears.leviathan/ValueDependency|null[0]
+final class <#A: kotlin/Any?> com.composegears.leviathan/ValueDependency : com.composegears.leviathan/MutableDependency<#A, #A> { // com.composegears.leviathan/ValueDependency|null[0]
     final fun injectedIn(com.composegears.leviathan/DIScope): #A // com.composegears.leviathan/ValueDependency.injectedIn|injectedIn(com.composegears.leviathan.DIScope){}[0]
     final fun provides(#A) // com.composegears.leviathan/ValueDependency.provides|provides(1:0){}[0]
 }

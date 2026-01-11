@@ -42,37 +42,41 @@ public interface Dependency<T> {
     public fun injectedIn(scope: DIScope): T
 }
 
+public interface MutableDependency<T, P> : Dependency<T> {
+    public fun provides(what: P)
+}
+
 /**
- * A dependency that always provides the same value.
+ * A dependency that provides a constant value.
  * The value can be updated using the [provides] method.
  */
 public class ValueDependency<T> internal constructor(
     private var value: T
-) : Dependency<T> {
+) : MutableDependency<T, T> {
     override fun injectedIn(scope: DIScope): T = value
 
     /**
-     * Updates the value of the dependency.
+     * Updates the provider to always return the given [value].
      */
-    public fun provides(newValue: T) {
-        value = newValue
+    override fun provides(what: T) {
+        value = what
     }
 }
 
 /**
  * A dependency that provides a value using a provider function.
- * The provider function can be updated to supply a new value.
+ * The provider can be updated using the [provides] method.
  */
 public class ProvidableDependency<T> internal constructor(
-    private var provider: () -> T
-) : Dependency<T> {
-    override fun injectedIn(scope: DIScope): T = provider()
+    private var valueProvider: () -> T
+) : MutableDependency<T, () -> T> {
+    override fun injectedIn(scope: DIScope): T = valueProvider()
 
     /**
-     * Updates the provider function to supply a new value.
+     * Updates the provider to the given [what] function.
      */
-    public fun provides(valueProvider: () -> T) {
-        provider = valueProvider
+    override fun provides(what: () -> T) {
+        valueProvider = what
     }
 }
 
@@ -133,7 +137,14 @@ public class InstanceDependency<T> internal constructor(
 
 /**
  * Base class for defining a module of dependencies.
- * Extend this class and use [valueOf], [providableOf], [factoryOf] and [instanceOf] to define dependencies.
+ * Extend this class and use
+ *  - [valueOf]
+ *  - [mutableValueOf]
+ *  - [providableOf]
+ *  - [factoryOf]
+ *  - [instanceOf]
+ *
+ *  functions to define dependencies.
  *
  * Example:
  * ```
@@ -148,6 +159,7 @@ public class InstanceDependency<T> internal constructor(
  *     }
  *     val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
  *     val constantValue by valueOf(42)
+ *     val mutableValue by mutableValueOf(42)
  *     val providable by providableOf { 34 }
  * }
  *
@@ -177,7 +189,7 @@ public class InstanceDependency<T> internal constructor(
  *     val scope = DIScope()
  *     val repo1 = Module.autoCloseRepository.injectedIn(scope)
  *     // update providable value
- *     (Module.providable as? ProvidableDependency<Int>)?.provides { 21 }
+ *     providable.provides { 21 }
  *     ...
  *     scope.close()
  * }
@@ -186,15 +198,14 @@ public class InstanceDependency<T> internal constructor(
 public abstract class Leviathan {
     public companion object Companion {
         @JvmStatic
-        protected operator fun <T> Dependency<T>.getValue(
+        protected operator fun <T, D : Dependency<T>> D.getValue(
             iRef: Leviathan,
             property: KProperty<*>
-        ): Dependency<T> = this
+        ): D = this
     }
 
     /**
      * Defines a dependency as a value.
-     * The value can be updated using the [ValueDependency.provides] method.
      * The value will be provided every time the dependency is injected.
      */
     protected fun <T> valueOf(
@@ -203,14 +214,24 @@ public abstract class Leviathan {
         ValueDependency(value)
 
     /**
-     * Defines a dependency as a providable function.
-     * The provider function can be updated using [ProvidableDependency.provides] method.
-     * The instance from the provider will be provided every time the dependency is injected.
+     * Defines a dependency as a mutable value.
+     * The value can be updated using the [ValueDependency.provides] method.
+     * The value will be provided every time the dependency is injected.
+     */
+    protected fun <T> mutableValueOf(
+        value: T
+    ): MutableDependency<T, T> =
+        ValueDependency(value)
+
+    /**
+     * Defines a dependency as a providable value.
+     * The value can be updated using the [ProvidableDependency.provides] method.
+     * The value will be provided every time the dependency is injected.
      */
     protected fun <T> providableOf(
-        provider: () -> T
-    ): ProvidableDependency<T> =
-        ProvidableDependency(provider)
+        valueProvider: () -> T
+    ): MutableDependency<T, () -> T> =
+        ProvidableDependency(valueProvider)
 
     /**
      * Defines a dependency as a factory function.
