@@ -79,7 +79,8 @@ object Module : Leviathan() {
     }
     val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
     val constantValue by valueOf(42)
-    val providable by providableOf { 34 }
+    val mutableValue by mutableValueOf(87)
+    val providable by providableOf { 53 }
 }
 ```
 
@@ -109,8 +110,9 @@ fun ComposeWithDI() {
 fun foo() {
     val scope = DIScope()
     val repo1 = Module.autoCloseRepository.injectedIn(scope)
-    // update providable value
-    (Module.providable as? ProvidableDependency<Int>)?.provides { 21 }
+    // update mutable values
+    Module.mutableValue.provides(15)
+    Module.providable.provides { 21 }
     /*..*/
     scope.close()
 }
