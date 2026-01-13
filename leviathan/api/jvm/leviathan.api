@@ -32,20 +32,26 @@ public abstract class com/composegears/leviathan/Leviathan {
 	protected static final fun getValue (Lcom/composegears/leviathan/Dependency;Lcom/composegears/leviathan/Leviathan;Lkotlin/reflect/KProperty;)Lcom/composegears/leviathan/Dependency;
 	protected final fun instanceOf (ZLkotlin/jvm/functions/Function1;)Lcom/composegears/leviathan/Dependency;
 	public static synthetic fun instanceOf$default (Lcom/composegears/leviathan/Leviathan;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/composegears/leviathan/Dependency;
-	protected final fun providableOf (Lkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/ProvidableDependency;
+	protected final fun mutableValueOf (Ljava/lang/Object;)Lcom/composegears/leviathan/MutableDependency;
+	protected final fun providableOf (Lkotlin/jvm/functions/Function0;)Lcom/composegears/leviathan/MutableDependency;
 	protected final fun valueOf (Ljava/lang/Object;)Lcom/composegears/leviathan/Dependency;
 }
 
 public final class com/composegears/leviathan/Leviathan$Companion {
 }
 
-public final class com/composegears/leviathan/ProvidableDependency : com/composegears/leviathan/Dependency {
-	public fun injectedIn (Lcom/composegears/leviathan/DIScope;)Ljava/lang/Object;
-	public final fun provides (Lkotlin/jvm/functions/Function0;)V
+public abstract interface class com/composegears/leviathan/MutableDependency : com/composegears/leviathan/Dependency {
+	public abstract fun provides (Ljava/lang/Object;)V
 }
 
-public final class com/composegears/leviathan/ValueDependency : com/composegears/leviathan/Dependency {
+public final class com/composegears/leviathan/ProvidableDependency : com/composegears/leviathan/MutableDependency {
 	public fun injectedIn (Lcom/composegears/leviathan/DIScope;)Ljava/lang/Object;
-	public final fun provides (Ljava/lang/Object;)V
+	public synthetic fun provides (Ljava/lang/Object;)V
+	public fun provides (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class com/composegears/leviathan/ValueDependency : com/composegears/leviathan/MutableDependency {
+	public fun injectedIn (Lcom/composegears/leviathan/DIScope;)Ljava/lang/Object;
+	public fun provides (Ljava/lang/Object;)V
 }
 

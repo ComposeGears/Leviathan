@@ -46,6 +46,7 @@ class ServiceLocator(externalServices: ExternalServices) : Leviathan() {
     val valueDep by valueOf(Service())
 
     // providable
+    val mutableValueDep by mutableValueOf(Service())
     val providableDep by providableOf { Service() }
 }
 
@@ -302,16 +303,14 @@ class Tests {
     }
 
     @Test
-    fun `valueDep - reflects changes to the value`() {
+    fun `mutableValueDep - reflect changes to provider`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
-        val value1 = serviceLocator.valueDep.injectedIn(scope)
-        val newValue = Service()
-        (serviceLocator.valueDep as? ValueDependency<Service>)?.provides(newValue)
-        val value2 = serviceLocator.valueDep.injectedIn(scope)
-        assertNotEquals(newValue, value1, "Updated value should not match old instance")
-        assertEquals(newValue, value2, "Updated value should match new instance")
+        val providedInstance = Service()
+        serviceLocator.mutableValueDep.provides(providedInstance)
+        val instance = serviceLocator.mutableValueDep.injectedIn(scope)
+        assertEquals(providedInstance, instance, "MutableValue dependency should return provided instance")
     }
 
     // ProvidableDependency tests
@@ -322,7 +321,7 @@ class Tests {
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
         val providedInstance = Service()
-        (serviceLocator.providableDep as? ProvidableDependency<Service>)?.provides { providedInstance }
+        serviceLocator.providableDep.provides { providedInstance }
         val instance = serviceLocator.providableDep.injectedIn(scope)
         assertEquals(providedInstance, instance, "Providable dependency should return provided instance")
     }
