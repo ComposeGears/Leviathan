@@ -1,4 +1,3 @@
-import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
@@ -26,12 +25,8 @@ kotlin {
         namespace = "com.composegears.leviathan.compose"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_1_8) }
 
-        compilations.configureEach {
-            compilerOptions.configure {
-                jvmTarget = JvmTarget.JVM_1_8
-            }
-        }
     }
     iosX64()
     iosArm64()
@@ -46,9 +41,16 @@ kotlin {
         commonMain.dependencies {
             api(projects.leviathan)
 
-            implementation(compose.foundation)
-            implementation(compose.runtime)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
             implementation(libs.lifecycle.viewmodel.compose)
+        }
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+        }
+        commonTest.dependencies {
+            implementation(libs.compose.ui.test)
+            implementation(libs.kotlin.test)
         }
     }
 }

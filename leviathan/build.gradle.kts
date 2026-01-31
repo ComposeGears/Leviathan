@@ -23,12 +23,7 @@ kotlin {
         namespace = "com.composegears.leviathan"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
-
-        compilations.configureEach {
-            compilerOptions.configure {
-                jvmTarget = JvmTarget.JVM_1_8
-            }
-        }
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_1_8) }
     }
     iosX64()
     iosArm64()
