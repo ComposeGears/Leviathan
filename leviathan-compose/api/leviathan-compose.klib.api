@@ -6,6 +6,35 @@
 // - Show declarations: true
 
 // Library unique name: <io.github.composegears:leviathan-compose>
+final enum class com.composegears.leviathan.compose/ComposeInjectionRetention : kotlin/Enum<com.composegears.leviathan.compose/ComposeInjectionRetention> { // com.composegears.leviathan.compose/ComposeInjectionRetention|null[0]
+    enum entry Remember // com.composegears.leviathan.compose/ComposeInjectionRetention.Remember|null[0]
+    enum entry Retain // com.composegears.leviathan.compose/ComposeInjectionRetention.Retain|null[0]
+
+    final val entries // com.composegears.leviathan.compose/ComposeInjectionRetention.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.composegears.leviathan.compose/ComposeInjectionRetention> // com.composegears.leviathan.compose/ComposeInjectionRetention.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.composegears.leviathan.compose/ComposeInjectionRetention // com.composegears.leviathan.compose/ComposeInjectionRetention.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.composegears.leviathan.compose/ComposeInjectionRetention> // com.composegears.leviathan.compose/ComposeInjectionRetention.values|values#static(){}[0]
+}
+
+final class com.composegears.leviathan.compose/ComposeDIScope : androidx.compose.runtime.retain/RetainObserver, androidx.compose.runtime/RememberObserver, com.composegears.leviathan/DIScope { // com.composegears.leviathan.compose/ComposeDIScope|null[0]
+    constructor <init>() // com.composegears.leviathan.compose/ComposeDIScope.<init>|<init>(){}[0]
+
+    final fun onAbandoned() // com.composegears.leviathan.compose/ComposeDIScope.onAbandoned|onAbandoned(){}[0]
+    final fun onEnteredComposition() // com.composegears.leviathan.compose/ComposeDIScope.onEnteredComposition|onEnteredComposition(){}[0]
+    final fun onExitedComposition() // com.composegears.leviathan.compose/ComposeDIScope.onExitedComposition|onExitedComposition(){}[0]
+    final fun onForgotten() // com.composegears.leviathan.compose/ComposeDIScope.onForgotten|onForgotten(){}[0]
+    final fun onRemembered() // com.composegears.leviathan.compose/ComposeDIScope.onRemembered|onRemembered(){}[0]
+    final fun onRetained() // com.composegears.leviathan.compose/ComposeDIScope.onRetained|onRetained(){}[0]
+    final fun onRetired() // com.composegears.leviathan.compose/ComposeDIScope.onRetired|onRetired(){}[0]
+    final fun onUnused() // com.composegears.leviathan.compose/ComposeDIScope.onUnused|onUnused(){}[0]
+}
+
+final val com.composegears.leviathan.compose/com_composegears_leviathan_compose_ComposeDIScope$stableprop // com.composegears.leviathan.compose/com_composegears_leviathan_compose_ComposeDIScope$stableprop|#static{}com_composegears_leviathan_compose_ComposeDIScope$stableprop[0]
+
 final fun <#A: kotlin/Any?> (androidx.lifecycle/ViewModel).com.composegears.leviathan.compose/inject(com.composegears.leviathan/Dependency<#A>): #A // com.composegears.leviathan.compose/inject|inject@androidx.lifecycle.ViewModel(com.composegears.leviathan.Dependency<0:0>){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> com.composegears.leviathan.compose/inject(com.composegears.leviathan/Dependency<#A>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/inject|inject(com.composegears.leviathan.Dependency<0:0>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]
 final fun <#A: kotlin/Any?> com.composegears.leviathan.compose/inject(kotlin/Function0<com.composegears.leviathan/Dependency<#A>>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/inject|inject(kotlin.Function0<com.composegears.leviathan.Dependency<0:0>>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]
+final fun com.composegears.leviathan.compose/com_composegears_leviathan_compose_ComposeDIScope$stableprop_getter(): kotlin/Int // com.composegears.leviathan.compose/com_composegears_leviathan_compose_ComposeDIScope$stableprop_getter|com_composegears_leviathan_compose_ComposeDIScope$stableprop_getter(){}[0]
+final inline fun <#A: reified kotlin/Any?> com.composegears.leviathan.compose/injectAndRetain(com.composegears.leviathan/Dependency<#A>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/injectAndRetain|injectAndRetain(com.composegears.leviathan.Dependency<0:0>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> com.composegears.leviathan.compose/injectAndRetain(kotlin/Function0<com.composegears.leviathan/Dependency<#A>>, androidx.compose.runtime/Composer?, kotlin/Int): #A // com.composegears.leviathan.compose/injectAndRetain|injectAndRetain(kotlin.Function0<com.composegears.leviathan.Dependency<0:0>>;androidx.compose.runtime.Composer?;kotlin.Int){0§<kotlin.Any?>}[0]

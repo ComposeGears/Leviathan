@@ -1,3 +1,24 @@
+public final class com/composegears/leviathan/compose/ComposeDIScope : com/composegears/leviathan/DIScope, androidx/compose/runtime/RememberObserver, androidx/compose/runtime/retain/RetainObserver {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun onAbandoned ()V
+	public fun onEnteredComposition ()V
+	public fun onExitedComposition ()V
+	public fun onForgotten ()V
+	public fun onRemembered ()V
+	public fun onRetained ()V
+	public fun onRetired ()V
+	public fun onUnused ()V
+}
+
+public final class com/composegears/leviathan/compose/ComposeInjectionRetention : java/lang/Enum {
+	public static final field Remember Lcom/composegears/leviathan/compose/ComposeInjectionRetention;
+	public static final field Retain Lcom/composegears/leviathan/compose/ComposeInjectionRetention;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/composegears/leviathan/compose/ComposeInjectionRetention;
+	public static fun values ()[Lcom/composegears/leviathan/compose/ComposeInjectionRetention;
+}
+
 public final class com/composegears/leviathan/compose/LeviathanComposeKt {
 	public static final fun inject (Landroidx/lifecycle/ViewModel;Lcom/composegears/leviathan/Dependency;)Ljava/lang/Object;
 	public static final fun inject (Lcom/composegears/leviathan/Dependency;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;

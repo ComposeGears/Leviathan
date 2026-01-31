@@ -4,11 +4,15 @@ minSdk = "21"
 compileSdk = "36"
 
 detekt = "1.23.8"
-jetbrains-compose = "1.9.3"
+jetbrains-compose = "1.10.0"
 kotlin = "2.3.0"
 
 [libraries]
-detekt-compose = "io.nlopez.compose.rules:detekt:0.5.3"
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrains-compose" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "jetbrains-compose" }
+
+detekt-compose = "io.nlopez.compose.rules:detekt:0.5.6"
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
