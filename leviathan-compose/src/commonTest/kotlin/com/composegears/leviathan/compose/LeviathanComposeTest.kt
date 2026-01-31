@@ -32,14 +32,14 @@ class LeviathanComposeTest {
     }
 
     @Test
-    fun `ViewModel # inject provides same instance within ViewModel scope`() {
+    fun `ViewModel - inject provides same instance within ViewModel scope`() {
         val testDI = TestDI()
         val vm = TestVN(testDI)
         assertEquals(vm.service1, vm.service2)
     }
 
     @Test
-    fun `ViewModel # inject provides different instances after ViewModel reinitialization`() {
+    fun `ViewModel - inject provides different instances after ViewModel reinitialization`() {
         val testDI = TestDI()
         val vmStore = ViewModelStore()
         val vm1 = TestVN(testDI)
@@ -52,7 +52,7 @@ class LeviathanComposeTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun `Compose # inject provides same instance within composition scope`() = runComposeUiTest {
+    fun `Compose - inject provides same instance within composition scope`() = runComposeUiTest {
         val testDI = TestDI()
         setContent {
             val service1 = inject(testDI.service)
@@ -63,7 +63,7 @@ class LeviathanComposeTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun `Compose # inject provides new instance after recomposition`() = runComposeUiTest {
+    fun `Compose - inject provides new instance after recomposition`() = runComposeUiTest {
         val testDI = TestDI()
         var outerService1: Service? = null
         var outerService2: Service? = null
@@ -105,7 +105,7 @@ class LeviathanComposeTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun `Compose # retained injection persist across recomposition`() = runComposeUiTest {
+    fun `Compose - retained injection persist across recomposition`() = runComposeUiTest {
         val testDI = TestDI()
         var retainedService: Service? = null
         var retainChecks = 0
