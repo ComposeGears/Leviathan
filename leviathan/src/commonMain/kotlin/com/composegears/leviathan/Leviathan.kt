@@ -82,16 +82,16 @@ public class ProvidableDependency<T> internal constructor(
 
 /**
  * A dependency that provides a new instance using a factory function.
- * If [useCache] is true, the same instance will be provided every time the dependency
+ * If [cacheInScope] is true, the same instance will be provided every time the dependency
  * is injected within the same [DIScope]. If false, a new instance will be created every time.
  */
 public class FactoryDependency<T> internal constructor(
-    private val useCache: Boolean,
+    private val cacheInScope: Boolean,
     private val factory: DependencyInitializationScope.() -> T
 ) : Dependency<T> {
     private val scopedCache = mutableMapOf<DIScope, T>()
     override fun injectedIn(scope: DIScope): T =
-        if (useCache) {
+        if (cacheInScope) {
             scopedCache.getOrElse(scope) {
                 val instance = factory(DependencyInitializationScope(scope))
                 scopedCache[scope] = instance
@@ -104,7 +104,7 @@ public class FactoryDependency<T> internal constructor(
 }
 
 /**
- * A dependency that provides a singleton instance using a factory function.
+ * A dependency that provides an instance using a factory function.
  * If [keepAlive] is true, the instance will be kept alive after being injected at least once.
  * If false, the instance will be destroyed as soon as the last [DIScope] using it is closed.
  */
@@ -135,12 +135,14 @@ public class InstanceDependency<T> internal constructor(
 
 // ---  Module definition ------------------------------------------
 
+@DslMarker
+public annotation class LeviathanDslMarker
+
 /**
  * Base class for defining a module of dependencies.
  * Extend this class and use
- *  - [valueOf]
- *  - [mutableValueOf]
- *  - [providableOf]
+ *  - [singleton]
+ *  - [mutableOf]
  *  - [factoryOf]
  *  - [instanceOf]
  *
@@ -151,23 +153,22 @@ public class InstanceDependency<T> internal constructor(
  * // ----- Module definition -----
  *
  * object Module : Leviathan() {
- *     val autoCloseRepository by instanceOf { SampleRepository() }
- *     val keepAliveRepository by instanceOf(keepAlive = true) { SampleRepository() }
+ *     val scopedRepository by instanceOf { SampleRepository() }
  *     val repositoryWithParam by factoryOf { SampleRepositoryWithParam(1) }
  *     val repositoryWithDependency by instanceOf {
- *         SampleRepositoryWithDependency(inject(autoCloseRepository))
+ *         SampleRepositoryWithDependency(inject(scopedRepository))
  *     }
  *     val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
- *     val constantValue by valueOf(42)
- *     val mutableValue by mutableValueOf(42)
- *     val providable by providableOf { 34 }
+ *     val constantValue by singleton(42)
+ *     val mutableValue by mutableOf(42)
+ *     val mutableProvider by mutableOf { 34 }
  * }
  *
  * // ----- Usage -----
  *
  * // view model
  * class SomeVM(
- *     dep1: Dependency<SampleRepository> = Module.autoCloseRepository,
+ *     dep1: Dependency<SampleRepository> = Module.scopedRepository,
  * ) : ViewModel() {
  *     val dep1value = inject(dep1)
  *
@@ -179,7 +180,7 @@ public class InstanceDependency<T> internal constructor(
  * // compose
  * @Composable
  * fun ComposeWithDI() {
- *     val repo1 = inject(Module.autoCloseRepository)
+ *     val repo1 = inject(Module.scopedRepository)
  *     val repo2 = inject { Module.repositoryWithParam }
  *     ...
  * }
@@ -187,14 +188,16 @@ public class InstanceDependency<T> internal constructor(
  * // random access
  * fun foo() {
  *     val scope = DIScope()
- *     val repo1 = Module.autoCloseRepository.injectedIn(scope)
- *     // update providable value
- *     providable.provides { 21 }
+ *     val repo1 = Module.scopedRepository.injectedIn(scope)
+ *     // update mutable dependencies
+ *     Module.mutableValue.provides(21)
+ *     Module.mutableProvider.provides { 55 }
  *     ...
  *     scope.close()
  * }
  * ```
  */
+@LeviathanDslMarker
 public abstract class Leviathan {
     public companion object Companion {
         @JvmStatic
@@ -205,53 +208,52 @@ public abstract class Leviathan {
     }
 
     /**
-     * Defines a dependency as a value.
-     * The value will be provided every time the dependency is injected.
+     * Defines a dependency as a constant singleton value.
+     * The same [value] is provided every time the dependency is injected.
      */
-    protected fun <T> valueOf(
+    protected fun <T> singleton(
         value: T
     ): Dependency<T> =
-        ValueDependency(value)
+        InstanceDependency(keepAlive = true) { value }
 
     /**
      * Defines a dependency as a mutable value.
      * The value can be updated using the [ValueDependency.provides] method.
      * The value will be provided every time the dependency is injected.
      */
-    protected fun <T> mutableValueOf(
+    protected fun <T> mutableOf(
         value: T
     ): MutableDependency<T, T> =
         ValueDependency(value)
 
     /**
-     * Defines a dependency as a providable value.
+     * Defines a dependency as a mutable provider.
      * The value can be updated using the [ProvidableDependency.provides] method.
      * The value will be provided every time the dependency is injected.
      */
-    protected fun <T> providableOf(
+    protected fun <T> mutableOf(
         valueProvider: () -> T
     ): MutableDependency<T, () -> T> =
         ProvidableDependency(valueProvider)
 
     /**
      * Defines a dependency as a factory function.
-     * If [useCache] is true (default), the same instance will be provided every time the dependency
+     * If [cacheInScope] is true (default), the same instance will be provided every time the dependency
      * is injected within the same [DIScope]. If false, a new instance will be created every time.
      */
     protected fun <T> factoryOf(
-        useCache: Boolean = true,
+        cacheInScope: Boolean = true,
         factory: DependencyInitializationScope.() -> T
     ): Dependency<T> =
-        FactoryDependency(useCache, factory)
+        FactoryDependency(cacheInScope, factory)
 
     /**
-     * Defines a dependency as a singleton instance.
-     * If [keepAlive] is true, the instance will be kept alive after being injected at least once.
-     * If false (default), the instance will be destroyed as soon as the last [DIScope] using it is closed.
+     * Defines a dependency as a scoped shared instance.
+     * The created item stays alive while it is used by at least one [DIScope].
+     * Once the last [DIScope] using it is closed, the instance is destroyed.
      */
     protected fun <T> instanceOf(
-        keepAlive: Boolean = false,
         factory: DependencyInitializationScope.() -> T
     ): Dependency<T> =
-        InstanceDependency(keepAlive, factory)
+        InstanceDependency(keepAlive = false, factory)
 }

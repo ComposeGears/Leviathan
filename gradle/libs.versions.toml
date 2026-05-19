@@ -1,11 +1,11 @@
 [versions]
-agp = "8.13.2"
+agp = "9.0.0"
 minSdk = "21"
 compileSdk = "36"
 
 detekt = "1.23.8"
-jetbrains-compose = "1.10.0"
-kotlin = "2.3.0"
+jetbrains-compose = "1.11.0"
+kotlin = "2.3.20"
 
 [libraries]
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose" }
