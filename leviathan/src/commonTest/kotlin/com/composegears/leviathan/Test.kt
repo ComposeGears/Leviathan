@@ -18,18 +18,18 @@ class CyclicService(val sp: () -> Service) : Service()
 
 //Outer independent ServiceLocator
 class ExternalServices : Leviathan() {
-    val service by instanceOf(false) { Service() }
+    val service by instanceOf { Service() }
 }
 
 //Main ServiceLocator
 class ServiceLocator(externalServices: ExternalServices) : Leviathan() {
     // instances
-    val autoCloseInstance by instanceOf(false) { Service() }
-    val keepAliveInstance by instanceOf(true) { Service() }
+    val autoCloseInstance by instanceOf { Service() }
+    val singletonInstance by singleton(Service())
 
     // factories
-    val alwaysNewFactory by factoryOf(false) { Service() }
-    val cachedFactory by factoryOf(true) { Service() }
+    val alwaysNewFactory by factoryOf(cacheInScope = false) { Service() }
+    val cachedFactory by factoryOf(cacheInScope = true) { Service() }
 
     // external
     val external by externalServices.service
@@ -43,11 +43,11 @@ class ServiceLocator(externalServices: ExternalServices) : Leviathan() {
     val cyclicDep2: Dependency<CyclicService> by instanceOf { CyclicService { inject(cyclicDep1) } }
 
     // value
-    val valueDep by valueOf(Service())
+    val singletonDep by singleton(Service())
 
-    // providable
-    val mutableValueDep by mutableValueOf(Service())
-    val providableDep by providableOf { Service() }
+    // mutable
+    val mutableDep by mutableOf(Service())
+    val mutableProviderDep by mutableOf { Service() }
 }
 
 //------------Code------------
@@ -94,7 +94,7 @@ class Tests {
         assertEquals(false, executed, "Global scope should not execute close actions")
     }
 
-    // FactoryDependency tests with useCache=true
+    // FactoryDependency tests with cacheInScope=true
     @Test
     fun `cachedFactory - caches instances within same scope`() {
         val externalServices = ExternalServices()
@@ -120,7 +120,7 @@ class Tests {
         assertNotEquals(instance1, instance2, "Cached factory should create new instance in different scope")
     }
 
-    // FactoryDependency tests with useCache=false
+    // FactoryDependency tests with cacheInScope=false
     @Test
     fun `alwaysNewFactory - creates new instances on each call`() {
         val externalServices = ExternalServices()
@@ -183,33 +183,33 @@ class Tests {
         assertNotEquals(instance1, instance4, "Should create new instance after all scopes close")
     }
 
-    // InstanceDependency tests with keepAlive=true
+    // singleton tests
     @Test
-    fun `keepAliveInstance - persists across different scopes`() {
+    fun `singletonInstance - persists across different scopes`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
         val scope2 = DIScope()
 
-        val instance1 = serviceLocator.keepAliveInstance.injectedIn(scope1)
-        val instance2 = serviceLocator.keepAliveInstance.injectedIn(scope2)
+        val instance1 = serviceLocator.singletonInstance.injectedIn(scope1)
+        val instance2 = serviceLocator.singletonInstance.injectedIn(scope2)
 
-        assertEquals(instance1, instance2, "Keep-alive instance should persist across scopes")
+        assertEquals(instance1, instance2, "Singleton dependency should persist across scopes")
     }
 
     @Test
-    fun `keepAliveInstance - survives scope closure`() {
+    fun `singletonInstance - survives scope closure`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
 
-        val instance1 = serviceLocator.keepAliveInstance.injectedIn(scope1)
+        val instance1 = serviceLocator.singletonInstance.injectedIn(scope1)
         scope1.close()
 
         val scope2 = DIScope()
-        val instance2 = serviceLocator.keepAliveInstance.injectedIn(scope2)
+        val instance2 = serviceLocator.singletonInstance.injectedIn(scope2)
 
-        assertEquals(instance1, instance2, "Keep-alive instance should survive scope closure")
+        assertEquals(instance1, instance2, "Singleton dependency should survive scope closure")
     }
 
     // DependencyInitializationScope tests
@@ -288,42 +288,42 @@ class Tests {
         assertNotEquals(external1, external2, "External dependencies should be independent")
     }
 
-    // ValueDependency tests
+    // singleton tests
     @Test
-    fun `valueDep - provides consistent value instance`() {
+    fun `singletonDep - provides consistent value instance`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope1 = DIScope()
         val scope2 = DIScope()
-        val value1 = serviceLocator.valueDep.injectedIn(scope1)
-        val value2 = serviceLocator.valueDep.injectedIn(scope1)
-        val value3 = serviceLocator.valueDep.injectedIn(scope2)
-        assertEquals(value1, value2, "Value dependency should provide consistent instance")
-        assertEquals(value2, value3, "Value dependency should provide consistent instance")
+        val value1 = serviceLocator.singletonDep.injectedIn(scope1)
+        val value2 = serviceLocator.singletonDep.injectedIn(scope1)
+        val value3 = serviceLocator.singletonDep.injectedIn(scope2)
+        assertEquals(value1, value2, "Singleton dependency should provide consistent instance")
+        assertEquals(value2, value3, "Singleton dependency should provide consistent instance")
     }
 
     @Test
-    fun `mutableValueDep - reflect changes to provider`() {
+    fun `mutableDep - reflect changes to provider`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
         val providedInstance = Service()
-        serviceLocator.mutableValueDep.provides(providedInstance)
-        val instance = serviceLocator.mutableValueDep.injectedIn(scope)
-        assertEquals(providedInstance, instance, "MutableValue dependency should return provided instance")
+        serviceLocator.mutableDep.provides(providedInstance)
+        val instance = serviceLocator.mutableDep.injectedIn(scope)
+        assertEquals(providedInstance, instance, "Mutable dependency should return provided instance")
     }
 
-    // ProvidableDependency tests
+    // Mutable provider tests
 
     @Test
-    fun `providableDep - reflect changes to provider`() {
+    fun `mutableProviderDep - reflect changes to provider`() {
         val externalServices = ExternalServices()
         val serviceLocator = ServiceLocator(externalServices)
         val scope = DIScope()
         val providedInstance = Service()
-        serviceLocator.providableDep.provides { providedInstance }
-        val instance = serviceLocator.providableDep.injectedIn(scope)
-        assertEquals(providedInstance, instance, "Providable dependency should return provided instance")
+        serviceLocator.mutableProviderDep.provides { providedInstance }
+        val instance = serviceLocator.mutableProviderDep.injectedIn(scope)
+        assertEquals(providedInstance, instance, "Mutable provider dependency should return provided instance")
     }
 
     // Scope behavior combination tests
@@ -335,15 +335,15 @@ class Tests {
 
         val autoClose1 = serviceLocator.autoCloseInstance.injectedIn(scope)
         val autoClose2 = serviceLocator.autoCloseInstance.injectedIn(scope)
-        val keepAlive1 = serviceLocator.keepAliveInstance.injectedIn(scope)
-        val keepAlive2 = serviceLocator.keepAliveInstance.injectedIn(scope)
+        val singleton1 = serviceLocator.singletonInstance.injectedIn(scope)
+        val singleton2 = serviceLocator.singletonInstance.injectedIn(scope)
         val cached1 = serviceLocator.cachedFactory.injectedIn(scope)
         val cached2 = serviceLocator.cachedFactory.injectedIn(scope)
         val alwaysNew1 = serviceLocator.alwaysNewFactory.injectedIn(scope)
         val alwaysNew2 = serviceLocator.alwaysNewFactory.injectedIn(scope)
 
         assertEquals(autoClose1, autoClose2, "Auto-close should be same within scope")
-        assertEquals(keepAlive1, keepAlive2, "Keep-alive should be same within scope")
+        assertEquals(singleton1, singleton2, "Singleton should be same within scope")
         assertEquals(cached1, cached2, "Cached should be same within scope")
         assertNotEquals(alwaysNew1, alwaysNew2, "Always-new should be different within scope")
     }
@@ -357,13 +357,13 @@ class Tests {
 
         val autoClose1 = serviceLocator.autoCloseInstance.injectedIn(scope1)
         val autoClose2 = serviceLocator.autoCloseInstance.injectedIn(scope2)
-        val keepAlive1 = serviceLocator.keepAliveInstance.injectedIn(scope1)
-        val keepAlive2 = serviceLocator.keepAliveInstance.injectedIn(scope2)
+        val singleton1 = serviceLocator.singletonInstance.injectedIn(scope1)
+        val singleton2 = serviceLocator.singletonInstance.injectedIn(scope2)
         val cached1 = serviceLocator.cachedFactory.injectedIn(scope1)
         val cached2 = serviceLocator.cachedFactory.injectedIn(scope2)
 
         assertEquals(autoClose1, autoClose2, "Auto-close should be same across scopes")
-        assertEquals(keepAlive1, keepAlive2, "Keep-alive should be same across scopes")
+        assertEquals(singleton1, singleton2, "Singleton should be same across scopes")
         assertNotEquals(cached1, cached2, "Cached should be different across scopes")
     }
 }

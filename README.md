@@ -41,14 +41,15 @@ Create `Module` (recommend to use `object`) and extends from `Leviathan` class
 
 Create fields using these functions:
 
-- Use `by instanceOf(keepAlive){ value }` to create instance dependency
-  - `keepAlive = true` : instance persists across different scopes
-  - `keepAlive = false`(default): instance is auto-closed when all scopes close
-- Use `by factoryOf(useCache)` to create factory dependency
-  - `useCache = true` (default): caches instances within the same scope
-  - `useCache = false`: creates new instance on each access
-- Use `by valueOf(value)` to create value dependency (the value may be updated later)
-- Use `by providableOf { value }` to create a providable dependency (provider may be updated later)
+- Use `by instanceOf { value }` to create a scoped instance dependency
+  - the instance is shared while it belongs to at least one active scope
+  - when the last scope closes, the instance is destroyed
+- Use `by factoryOf(cacheInScope)` to create factory dependency
+  - `cacheInScope = true` (default): caches instances within the same scope
+  - `cacheInScope = false`: creates new instance on each access
+- Use `by singleton(value)` to create a constant dependency
+- Use `by mutableOf(value)` to create a mutable value dependency
+- Use `by mutableOf { value }` to create a mutable provider dependency
 
 All functions return a `Dependency<Type>` instance.
 
@@ -71,16 +72,15 @@ Create module
 
 ```kotlin
 object Module : Leviathan() {
-    val autoCloseRepository by instanceOf { SampleRepository() }
-    val keepAliveRepository by instanceOf(keepAlive = true) { SampleRepository() }
+    val scopedRepository by instanceOf { SampleRepository() }
     val repositoryWithParam by factoryOf { SampleRepositoryWithParam(1) }
     val repositoryWithDependency by instanceOf { 
-        SampleRepositoryWithDependency(inject(autoCloseRepository)) 
+        SampleRepositoryWithDependency(inject(scopedRepository)) 
     }
     val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
-    val constantValue by valueOf(42)
-    val mutableValue by mutableValueOf(87)
-    val providable by providableOf { 53 }
+    val constantValue by singleton(42)
+    val mutableValue by mutableOf(87)
+    val mutableProvider by mutableOf { 53 }
 }
 ```
 
@@ -89,7 +89,7 @@ Dependencies usage:
 ```kotlin
 // view model
 class SomeVM(
-    dep1: Dependency<SampleRepository> = Module.autoCloseRepository,
+    dep1: Dependency<SampleRepository> = Module.scopedRepository,
 ) : ViewModel() {
     val dep1value = inject(dep1)
 
@@ -101,7 +101,7 @@ class SomeVM(
 // compose
 @Composable
 fun ComposeWithDI() {
-    val repo1 = inject(Module.autoCloseRepository)
+    val repo1 = inject(Module.scopedRepository)
     val repo2 = inject { Module.repositoryWithParam }
     /*..*/
 }
@@ -109,10 +109,10 @@ fun ComposeWithDI() {
 // random access
 fun foo() {
     val scope = DIScope()
-    val repo1 = Module.autoCloseRepository.injectedIn(scope)
+    val repo1 = Module.scopedRepository.injectedIn(scope)
     // update mutable values
     Module.mutableValue.provides(15)
-    Module.providable.provides { 21 }
+    Module.mutableProvider.provides { 21 }
     /*..*/
     scope.close()
 }
