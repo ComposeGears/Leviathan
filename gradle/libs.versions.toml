@@ -5,7 +5,7 @@ compileSdk = "36"
 
 detekt = "1.23.8"
 jetbrains-compose = "1.11.0"
-kotlin = "2.3.20"
+kotlin = "2.3.21"
 
 [libraries]
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose" }
