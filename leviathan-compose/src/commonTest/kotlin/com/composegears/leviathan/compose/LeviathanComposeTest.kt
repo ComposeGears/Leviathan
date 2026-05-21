@@ -16,13 +16,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import com.composegears.leviathan.Leviathan
+import com.composegears.leviathan.instanceOf
 import kotlin.test.*
 
 class LeviathanComposeTest {
 
     class Service
 
-    class TestDI : Leviathan() {
+    class TestDI : Leviathan {
         val service by instanceOf { Service() }
     }
 

@@ -1,7 +1,11 @@
 package com.composegears.leviathan
 
-import kotlin.jvm.JvmStatic
 import kotlin.reflect.KProperty
+
+// --- Marker -------------------------------------------
+
+@DslMarker
+public annotation class LeviathanDslMarker
 
 // ---  Scope definition -------------------------------------------
 
@@ -30,6 +34,7 @@ public open class DIScope {
     }
 }
 
+@LeviathanDslMarker
 public class DependencyInitializationScope internal constructor(
     private val diScope: DIScope
 ) {
@@ -40,42 +45,31 @@ public class DependencyInitializationScope internal constructor(
 
 public interface Dependency<T> {
     public fun injectedIn(scope: DIScope): T
+
+    public operator fun getValue(thisRef: Any?, property: KProperty<*>): Dependency<T> = this
 }
 
 public interface MutableDependency<T, P> : Dependency<T> {
     public fun provides(what: P)
-}
 
-/**
- * A dependency that provides a constant value.
- * The value can be updated using the [provides] method.
- */
-public class ValueDependency<T> internal constructor(
-    private var value: T
-) : MutableDependency<T, T> {
-    override fun injectedIn(scope: DIScope): T = value
-
-    /**
-     * Updates the provider to always return the given [value].
-     */
-    override fun provides(what: T) {
-        value = what
-    }
+    public override operator fun getValue(thisRef: Any?, property: KProperty<*>): MutableDependency<T, P> = this
 }
 
 /**
  * A dependency that provides a value using a provider function.
  * The provider can be updated using the [provides] method.
  */
-public class ProvidableDependency<T> internal constructor(
-    private var valueProvider: () -> T
-) : MutableDependency<T, () -> T> {
-    override fun injectedIn(scope: DIScope): T = valueProvider()
+internal class MutableDependencyImpl<T>(
+    private var valueProvider: DependencyInitializationScope.() -> T
+) : MutableDependency<T, DependencyInitializationScope.() -> T> {
+    override fun injectedIn(scope: DIScope): T = valueProvider(
+        DependencyInitializationScope(scope)
+    )
 
     /**
      * Updates the provider to the given [what] function.
      */
-    override fun provides(what: () -> T) {
+    override fun provides(what: DependencyInitializationScope.() -> T) {
         valueProvider = what
     }
 }
@@ -85,7 +79,7 @@ public class ProvidableDependency<T> internal constructor(
  * If [cacheInScope] is true, the same instance will be provided every time the dependency
  * is injected within the same [DIScope]. If false, a new instance will be created every time.
  */
-public class FactoryDependency<T> internal constructor(
+internal class FactoryDependencyImpl<T>(
     private val cacheInScope: Boolean,
     private val factory: DependencyInitializationScope.() -> T
 ) : Dependency<T> {
@@ -108,7 +102,7 @@ public class FactoryDependency<T> internal constructor(
  * If [keepAlive] is true, the instance will be kept alive after being injected at least once.
  * If false, the instance will be destroyed as soon as the last [DIScope] using it is closed.
  */
-public class InstanceDependency<T> internal constructor(
+internal class InstanceDependencyImpl<T>(
     private val keepAlive: Boolean,
     private val factory: DependencyInitializationScope.() -> T
 ) : Dependency<T> {
@@ -133,127 +127,128 @@ public class InstanceDependency<T> internal constructor(
     }
 }
 
-// ---  Module definition ------------------------------------------
-
-@DslMarker
-public annotation class LeviathanDslMarker
+// ---  DSL definition ---------------------------------------------
 
 /**
- * Base class for defining a module of dependencies.
- * Extend this class and use
- *  - [singleton]
- *  - [mutableOf]
- *  - [factoryOf]
- *  - [instanceOf]
+ * Marker interface and DSL receiver for Leviathan dependency declarations.
  *
- *  functions to define dependencies.
+ * This interface provides the receiver for extension builders:
+ * [singleton], [factoryOf], [instanceOf], and [mutableOf].
+ *
+ * You can use the DSL in two equivalent styles:
+ *
+ * 1) Explicit receiver:
+ *    `val repo by Leviathan.singleton { Repository() }`
+ *
+ * 2) Implicit receiver by implementing [Leviathan]:
+ *    `class Module : Leviathan { val repo by singleton { Repository() } }`
+ *
+ * The companion object [Default] is exposed as `Leviathan` and serves as
+ * the default shared receiver for DSL calls.
+ */
+public interface Leviathan {
+    /**
+     * Default shared DSL receiver, referenced in code as `Leviathan`.
+     */
+    public companion object Default : Leviathan
+}
+
+/**
+ * Defines a dependency as a singleton within its declaration holder.
+ *
+ * The [valueProvider] is evaluated lazily on the first injection and its result is reused
+ * for all subsequent injections from the same dependency instance, regardless of [DIScope].
+ * The value is not cleared by scope closure; it stays alive as long as the dependency holder
+ * instance itself stays alive (for example, a containing object/class instance).
+ *
+ * You can call `inject(...)` inside it to resolve other dependencies.
  *
  * Example:
- * ```
- * // ----- Module definition -----
+ * `val repo by Leviathan.singleton { Repository(inject(apiClient)) }`
  *
- * object Module : Leviathan() {
- *     val scopedRepository by instanceOf { SampleRepository() }
- *     val repositoryWithParam by factoryOf { SampleRepositoryWithParam(1) }
- *     val repositoryWithDependency by instanceOf {
- *         SampleRepositoryWithDependency(inject(scopedRepository))
- *     }
- *     val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
- *     val constantValue by singleton(42)
- *     val mutableValue by mutableOf(42)
- *     val mutableProvider by mutableOf { 34 }
- * }
- *
- * // ----- Usage -----
- *
- * // view model
- * class SomeVM(
- *     dep1: Dependency<SampleRepository> = Module.scopedRepository,
- * ) : ViewModel() {
- *     val dep1value = inject(dep1)
- *
- *     fun foo(){
- *         val dep2 = inject(Module.interfaceRepo)
- *     }
- * }
- *
- * // compose
- * @Composable
- * fun ComposeWithDI() {
- *     val repo1 = inject(Module.scopedRepository)
- *     val repo2 = inject { Module.repositoryWithParam }
- *     ...
- * }
- *
- * // random access
- * fun foo() {
- *     val scope = DIScope()
- *     val repo1 = Module.scopedRepository.injectedIn(scope)
- *     // update mutable dependencies
- *     Module.mutableValue.provides(21)
- *     Module.mutableProvider.provides { 55 }
- *     ...
- *     scope.close()
- * }
- * ```
+ * @param valueProvider Factory block used to create the value once per dependency holder instance.
+ * @return A [Dependency] that returns the same value for that holder instance.
  */
-@LeviathanDslMarker
-public abstract class Leviathan {
-    public companion object Companion {
-        @JvmStatic
-        protected operator fun <T, D : Dependency<T>> D.getValue(
-            iRef: Leviathan,
-            property: KProperty<*>
-        ): D = this
-    }
+@Suppress("UnusedReceiverParameter")
+public fun <T> Leviathan.singleton(
+    valueProvider: DependencyInitializationScope.() -> T
+): Dependency<T> =
+    InstanceDependencyImpl(keepAlive = true) { valueProvider() }
 
-    /**
-     * Defines a dependency as a constant singleton value.
-     * The same [value] is provided every time the dependency is injected.
-     */
-    protected fun <T> singleton(
-        value: T
-    ): Dependency<T> =
-        InstanceDependency(keepAlive = true) { value }
+/**
+ * Defines a dependency as a factory.
+ *
+ * The [factory] block is executed to produce values on injection.
+ *
+ * - When [cacheInScope] is `true` (default), one value is created per [DIScope] and
+ *   reused for subsequent injections in that same scope.
+ * - When [cacheInScope] is `false`, a new value is created on every injection call.
+ *
+ * Cached values are released when their corresponding [DIScope] is closed.
+ *
+ * You can call `inject(...)` inside it to resolve other dependencies.
+ *
+ * Example:
+ * `val repo by Leviathan.factoryOf { Repository(inject(api)) }`
+ *
+ * @param cacheInScope Controls whether values are cached per scope.
+ * @param factory Factory block that creates the value.
+ * @return A [Dependency] with per-scope cached or always-new behavior.
+ */
+@Suppress("UnusedReceiverParameter")
+public fun <T> Leviathan.factoryOf(
+    cacheInScope: Boolean = true,
+    factory: DependencyInitializationScope.() -> T
+): Dependency<T> =
+    FactoryDependencyImpl(cacheInScope, factory)
 
-    /**
-     * Defines a dependency as a mutable value.
-     * The value can be updated using the [ValueDependency.provides] method.
-     * The value will be provided every time the dependency is injected.
-     */
-    protected fun <T> mutableOf(
-        value: T
-    ): MutableDependency<T, T> =
-        ValueDependency(value)
+/**
+ * Defines a dependency as a scoped shared instance.
+ *
+ * A single instance is created lazily on first injection and then shared across all active scopes
+ * that use this dependency. It is one shared instance while at least one participating scope remains active.
+ *
+ * Lifecycle behavior:
+ * - The instance is created on first injection.
+ * - Each injecting [DIScope] is tracked.
+ * - When a tracked scope is closed, it is removed from tracking.
+ * - When the last tracked scope is closed, the instance is cleared.
+ * - The next injection creates a new instance.
+ *
+ * You can call `inject(...)` inside it to resolve other dependencies.
+ *
+ * Example:
+ * `val session by Leviathan.instanceOf { UserSession(inject(repository)) }`
+ *
+ * @param factory Factory block that creates the shared instance.
+ * @return A [Dependency] whose instance lives while at least one using scope is alive.
+ */
+@Suppress("UnusedReceiverParameter")
+public fun <T> Leviathan.instanceOf(
+    factory: DependencyInitializationScope.() -> T
+): Dependency<T> =
+    InstanceDependencyImpl(keepAlive = false, factory)
 
-    /**
-     * Defines a dependency as a mutable provider.
-     * The value can be updated using the [ProvidableDependency.provides] method.
-     * The value will be provided every time the dependency is injected.
-     */
-    protected fun <T> mutableOf(
-        valueProvider: () -> T
-    ): MutableDependency<T, () -> T> =
-        ProvidableDependency(valueProvider)
-
-    /**
-     * Defines a dependency as a factory function.
-     * If [cacheInScope] is true (default), the same instance will be provided every time the dependency
-     * is injected within the same [DIScope]. If false, a new instance will be created every time.
-     */
-    protected fun <T> factoryOf(
-        cacheInScope: Boolean = true,
-        factory: DependencyInitializationScope.() -> T
-    ): Dependency<T> =
-        FactoryDependency(cacheInScope, factory)
-
-    /**
-     * Defines a dependency as a scoped shared instance.
-     * The created item stays alive while it is used by at least one [DIScope].
-     * Once the last [DIScope] using it is closed, the instance is destroyed.
-     */
-    protected fun <T> instanceOf(
-        factory: DependencyInitializationScope.() -> T
-    ): Dependency<T> =
-        InstanceDependency(keepAlive = false, factory)
-}
+/**
+ * Defines a dependency as a mutable provider.
+ *
+ * The current [valueProvider] function is invoked on each injection.
+ * You can replace the provider later via [MutableDependency.provides], which changes
+ * how future injections are resolved.
+ *
+ * This is useful for runtime reconfiguration, test overrides, and lightweight swapping
+ * of produced values without recreating the dependency declaration.
+ *
+ * You can call `inject(...)` inside it to resolve other dependencies.
+ *
+ * Example:
+ * `val endpoint by Leviathan.mutableOf { ServiceImpl() }`
+ *
+ * @param valueProvider Initial provider function used to resolve values.
+ * @return A [MutableDependency] whose provider can be updated at runtime.
+ */
+@Suppress("UnusedReceiverParameter")
+public fun <T> Leviathan.mutableOf(
+    valueProvider: DependencyInitializationScope.() -> T
+): MutableDependency<T, DependencyInitializationScope.() -> T> =
+    MutableDependencyImpl(valueProvider)
