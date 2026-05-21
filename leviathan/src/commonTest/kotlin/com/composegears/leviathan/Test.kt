@@ -16,16 +16,18 @@ class DependService(val s: Service) : Service()
 
 class CyclicService(val sp: () -> Service) : Service()
 
+private val topLevelService by Leviathan.instanceOf { Service() }
+
 //Outer independent ServiceLocator
-class ExternalServices : Leviathan() {
-    val service by instanceOf { Service() }
+class ExternalServices {
+    val service by Leviathan.instanceOf { Service() }
 }
 
 //Main ServiceLocator
-class ServiceLocator(externalServices: ExternalServices) : Leviathan() {
+class ServiceLocator(externalServices: ExternalServices) : Leviathan {
     // instances
     val autoCloseInstance by instanceOf { Service() }
-    val singletonInstance by singleton(Service())
+    val singletonInstance by singleton { Service() }
 
     // factories
     val alwaysNewFactory by factoryOf(cacheInScope = false) { Service() }
@@ -43,10 +45,9 @@ class ServiceLocator(externalServices: ExternalServices) : Leviathan() {
     val cyclicDep2: Dependency<CyclicService> by instanceOf { CyclicService { inject(cyclicDep1) } }
 
     // value
-    val singletonDep by singleton(Service())
+    val singletonDep by singleton { Service() }
 
     // mutable
-    val mutableDep by mutableOf(Service())
     val mutableProviderDep by mutableOf { Service() }
 }
 
@@ -92,6 +93,15 @@ class Tests {
         DIScope.GLOBAL.onClose { executed = true }
         DIScope.GLOBAL.close()
         assertEquals(false, executed, "Global scope should not execute close actions")
+    }
+
+    @Test
+    fun `top-level dependency declaration - works outside holder types`() {
+        val scope = DIScope()
+        val instance1 = topLevelService.injectedIn(scope)
+        val instance2 = topLevelService.injectedIn(scope)
+        scope.close()
+        assertEquals(instance1, instance2, "Top-level dependency should work with the Leviathan DSL")
     }
 
     // FactoryDependency tests with cacheInScope=true
@@ -230,7 +240,7 @@ class Tests {
         val scope = DIScope()
 
         // Create a more complex dependency chain
-        val testLocator = object : Leviathan() {
+        val testLocator = object : Leviathan {
             val level1 by instanceOf { Service() }
             val level2 by instanceOf { DependService(inject(level1)) }
             val level3 by instanceOf { DependService(inject(level2)) }
@@ -300,17 +310,6 @@ class Tests {
         val value3 = serviceLocator.singletonDep.injectedIn(scope2)
         assertEquals(value1, value2, "Singleton dependency should provide consistent instance")
         assertEquals(value2, value3, "Singleton dependency should provide consistent instance")
-    }
-
-    @Test
-    fun `mutableDep - reflect changes to provider`() {
-        val externalServices = ExternalServices()
-        val serviceLocator = ServiceLocator(externalServices)
-        val scope = DIScope()
-        val providedInstance = Service()
-        serviceLocator.mutableDep.provides(providedInstance)
-        val instance = serviceLocator.mutableDep.injectedIn(scope)
-        assertEquals(providedInstance, instance, "Mutable dependency should return provided instance")
     }
 
     // Mutable provider tests

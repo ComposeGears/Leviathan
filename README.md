@@ -37,21 +37,18 @@ Use same dependencies in the `dependencies { ... }` section
 Base usage
 ----------
 
-Create `Module` (recommend to use `object`) and extends from `Leviathan` class
+Create `Module` (recommend to use `object`) and implement `Leviathan` marker interface.
 
 Create fields using these functions:
 
 - Use `by instanceOf { value }` to create a scoped instance dependency
   - the instance is shared while it belongs to at least one active scope
   - when the last scope closes, the instance is destroyed
-- Use `by factoryOf(cacheInScope)` to create factory dependency
-  - `cacheInScope = true` (default): caches instances within the same scope
+- Use `by factoryOf(cacheInScope){ ... }` to create factory dependency
+  - `cacheInScope = true` (default): caches instances within the same scopes
   - `cacheInScope = false`: creates new instance on each access
-- Use `by singleton(value)` to create a constant dependency
-- Use `by mutableOf(value)` to create a mutable value dependency
+- Use `by singleton { value }` to create a constant dependency
 - Use `by mutableOf { value }` to create a mutable provider dependency
-
-All functions return a `Dependency<Type>` instance.
 
 
 Example
@@ -71,17 +68,30 @@ class SampleInterfaceRepoImpl : SampleInterfaceRepo
 Create module
 
 ```kotlin
-object Module : Leviathan() {
-    val scopedRepository by instanceOf { SampleRepository() }
-    val repositoryWithParam by factoryOf { SampleRepositoryWithParam(1) }
-    val repositoryWithDependency by instanceOf { 
+// implicit DSL
+object Module {
+    val scopedRepository by Leviathan.instanceOf { SampleRepository() }
+    val repositoryWithParam by Leviathan.factoryOf { SampleRepositoryWithParam(1) }
+    val repositoryWithDependency by Leviathan.instanceOf {
+        // dependency injection from the same module
         SampleRepositoryWithDependency(inject(scopedRepository)) 
     }
-    val interfaceRepo by instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
-    val constantValue by singleton(42)
-    val mutableValue by mutableOf(87)
-    val mutableProvider by mutableOf { 53 }
+    // interface binding
+    val interfaceRepo by Leviathan.instanceOf<SampleInterfaceRepo> { SampleInterfaceRepoImpl() }
+    val constantValue by Leviathan.singleton { 42 }
+    val mutableProvider by Leviathan.mutableOf { 53 }
 }
+
+// explicit DSL
+class ModuleWithImplicitDsl : Leviathan {
+    val scopedRepository by instanceOf { SampleRepository() }
+    val repositoryWithDependency by instanceOf {
+        SampleRepositoryWithDependency(inject(scopedRepository))
+    }
+}
+
+// top-level
+val appWideRepository by Leviathan.instanceOf { SampleRepository() }
 ```
 
 Dependencies usage:
@@ -110,11 +120,38 @@ fun ComposeWithDI() {
 fun foo() {
     val scope = DIScope()
     val repo1 = Module.scopedRepository.injectedIn(scope)
+    val repo2 = appWideRepository.injectedIn(scope)
     // update mutable values
-    Module.mutableValue.provides(15)
     Module.mutableProvider.provides { 21 }
     /*..*/
     scope.close()
+}
+```
+
+## Migration to 4.0.0
+
+Before:
+
+```kotlin
+object Module : Leviathan() {
+    val repo by instanceOf { SampleRepository() }
+    val config by mutableOf { 1 }
+}
+```
+
+After:
+
+```kotlin
+class ModuleWithDsl : Leviathan {
+    val repo by instanceOf { SampleRepository() }
+    val config by mutableOf { 1 }
+}
+
+// or
+
+object Module {
+    val repo by Leviathan.instanceOf { SampleRepository() }
+    val config by Leviathan.mutableOf { 1 }
 }
 ```
 

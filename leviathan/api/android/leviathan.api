@@ -50,8 +50,3 @@ public final class com/composegears/leviathan/ProvidableDependency : com/compose
 	public fun provides (Lkotlin/jvm/functions/Function0;)V
 }
 
-public final class com/composegears/leviathan/ValueDependency : com/composegears/leviathan/MutableDependency {
-	public fun injectedIn (Lcom/composegears/leviathan/DIScope;)Ljava/lang/Object;
-	public fun provides (Ljava/lang/Object;)V
-}
-
